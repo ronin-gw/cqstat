@@ -99,7 +99,7 @@ def parse_args():
     parser.add_argument("-h", action='help', default="==SUPPRESS==", help='Show this help message and exit.')
     parser.add_argument("--help", action="store_true", help='Show preview and current settings.')
 
-    formats = parser.add_argument_group("formats")
+    formats = parser.add_argument_group("formats", "Specify framework of format")
     formats.add_argument("-c", "--cluster-only",
                          action="store_true",
                          help="Show cluster information summary.")
@@ -128,7 +128,7 @@ def parse_args():
                          nargs='+', action=split_comma, metavar="job_list",
                          help="Show scheduler job information")
 
-    filters = parser.add_argument_group("filters")
+    filters = parser.add_argument_group("filters", "Filtering options for jobs or queues")
     filters.add_argument("-l", "--resource",
                          nargs='+', action=parse_eq, metavar="resource{=value},...",
                          help="Filter queues by GE resources")
@@ -150,7 +150,7 @@ def parse_args():
                          action=ParseQueueState, metavar="{p|r|s|z|hu|ho|hs|hd|hj|ha|h|a}[+]",
                          help="Filter by queue status")
 
-    memory = parser.add_argument_group("memory")
+    memory = parser.add_argument_group("memory", "Add memory informations")
     memory.add_argument("-m", "--required-memory",
                         nargs='?', choices=("s_vmem", "mem_req"),
                         action=Invert, default=settings["required-memory"],
@@ -166,7 +166,7 @@ def parse_args():
                         action=Invert, default=settings["pending-jobs"],
                         help="Display pending jobs")
 
-    others = parser.add_argument_group("others")
+    others = parser.add_argument_group("others", "Some useful options")
     others.add_argument("-w", "--watch",
                         nargs='?', const=settings["watch"], default=False, metavar="sec",
                         help="Show status periodically (like watch command)")
@@ -180,7 +180,7 @@ def parse_args():
                         action=Invert, default=settings["bleach"],
                         help="Disable coloring")
 
-    additional = parser.add_argument_group("additiobals")
+    additional = parser.add_argument_group("additiobals", "Add/Remove some attributes individually")
     additional.add_argument("--nurg", action=Invert, default=settings["nurg"])
     additional.add_argument("--nprior", action=Invert, default=settings["nprior"])
     additional.add_argument("--ntckts", action=Invert, default=settings["ntckts"])
@@ -215,6 +215,7 @@ def parse_args():
 
     _setup_class(args, settings)
 
+    # Build options for qstat call
     options = ''
     if args.resource:
         options += " -l " + ','.join(args.resource)
@@ -222,11 +223,15 @@ def parse_args():
         options += " -q " + ','.join(args.queue)
     setattr(args, "options", options)
 
+    # Define username search pattern
     if args.all_user:
         setattr(args, "user_pattern", Re_dummy(True))
     else:
         setattr(args, "user_pattern", generate_pattern(args.user))
 
+    # TODO: Define job search pattern
+
+    # Return args of print help
     if args.help:
         print_detail(args, settings)
         sys.exit(0)
