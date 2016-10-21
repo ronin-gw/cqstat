@@ -39,7 +39,6 @@ class Job(Coloring):
         max_vmem=None,
         tckts=None,
         ovrts=None,
-        ovrts=None,
         otckt=None,
         ftckt=None,
         stckt=None,
