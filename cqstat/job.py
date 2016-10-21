@@ -3,18 +3,75 @@ from lib import calc_suffix
 
 
 class Job(Coloring):
-    def __init__(self, job_ID, prior, name, user, state, s_at_date, s_at_time, slots, ja_task_ID=''):
-        self.id = job_ID
-        self.prior = float(prior)
-        self.name = name
-        self.user = user
-        self.state = state
-        self.s_at_date = s_at_date
-        self.s_at_time = s_at_time
-        self.slots = int(slots)
-        self.a_id = ja_task_ID
-
-        self.is_visible = False
+    def __init__(
+        self,
+        job_ID,
+        prior,
+        name,
+        user,
+        state,
+        jclass,
+        nurg=None,
+        nprior=None,
+        ntckts=None,
+        urg=None,
+        rrcontr=None,
+        wtcontr=None,
+        dicontr=None,
+        ppri=None,
+        uid=None,
+        group=None,
+        gid=None,
+        sup_group=None,
+        project=None,
+        department=None,
+        sub_strt_at=None,
+        sub_at=None,
+        strt_at=None,
+        deadline=None,
+        wallclock=None,
+        cpu=None,
+        mem=None,
+        io=None,
+        low=None,
+        loops=None,
+        vmem=None,
+        max_vmem=None,
+        tckts=None,
+        ovrts=None,
+        ovrts=None,
+        otckt=None,
+        ftckt=None,
+        stckt=None,
+        share=None,
+        queue=None,
+        slots=None,
+        ja_task_id=None,
+        master_q=None,
+        h_resources=None,
+        master_h_res=None,
+        s_resources=None,
+        binding=None,
+        sge_o_home=None,
+        sge_o_log_name=None,
+        sge_o_path=None,
+        sge_o_shell=None,
+        sge_o_workdir=None,
+        sge_o_host=None,
+        account=None,
+        stdout_path_list=None,
+        stderr_path_list=None,
+        mail_list=None,
+        notify=None,
+        restart=None,
+        env_list=None,
+        mbind=None,
+        submit_cmd=None,
+        exec_host_list=None,
+        granted_req=None,
+        scheduling=None
+    ):
+        pass
 
     def visible(self):
         self.is_visible = True
