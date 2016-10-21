@@ -6,7 +6,7 @@ import fcntl
 import cStringIO
 import contextlib
 
-from setup import parse_args
+from startup import parse_args
 from lib import flatten
 from qcommand import build_cluster, add_host_info, get_resource_option
 from output import print_cluster_status, print_full_status, print_status
