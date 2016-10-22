@@ -1,3 +1,4 @@
+from __future__ import print_function
 from cluster import Cluster
 from queue import Queue
 from job import Job
@@ -5,10 +6,42 @@ from output import print_status, print_full_status, print_cluster_status
 
 
 def print_detail(args, settings):
-    j = Job("12345", "0.0", "job12345", settings["username"], 'r', "01/01/2015", "12:34:56", "6")
-    jo = Job("12344", "0.0", "job12344", "user01", 'r', "01/01/2015", "12:34:00", "4")
-    jp = Job("12346", "0.0", "job12346", "user02", 'qw', "01/01/2015", "12:35:28", "10")
-    ja = Job("12340", "0.0", "job12340", "user03", 'r', "01/01/2015", "12:30:11", "20")
+    j = Job("12345", "0.0", "job12345", settings["username"], 'r', '',
+            0., 0., 0., 0, 0, 0, 0, 0,
+            100, "tgroup", 100, "tgroup",
+            "test project", "test department",
+            "01/01/2016 12:34:56", "01/01/2016 12:33:21", "01/01/2016 12:34:56", '',
+            "00:01:35", "00:01:00", "12.00000 GBs", "0.00984 GB",
+            "0.489 s", "1563", "12.000G", "12.000G",
+            0, 0, 0, 0, 0,
+            0., None, "6", "1")
+    jo = Job("12344", "0.0", "job12344", "user01", 'r', '',
+             0., 0., 0., 0, 0, 0, 0, 0,
+             101, "tgroup", 100, "tgroup",
+             "test project", "test department",
+             "01/01/2016 12:34:00", "01/01/2016 12:33:00", "01/01/2016 12:34:00", '',
+             "00:01:00", "00:00:35", "8.00000 GBs", "0.00263 GB",
+             "0.135 s", "8275", "8.000G", "8.000G",
+             0, 0, 0, 0, 0,
+             0., None, "4", "1")
+    jp = Job("12346", "0.0", "job12346", "user02", 'qw', '',
+             0., 0., 0., 0, 0, 0, 0, 0,
+             102, "tgroup", 100, "tgroup",
+             "test project", "test department",
+             "01/01/2016 12:35:28", "01/01/2016 12:35:28", None, '',
+             None, None, None, None,
+             None, None, None, None,
+             0, 0, 0, 0, 0,
+             0., None, "10", "1")
+    ja = Job("12340", "0.0", "job12340", "user03", 'r', '',
+             0., 0., 0., 0, 0, 0, 0, 0,
+             101, "tgroup", 100, "tgroup",
+             "test project", "test department",
+             "01/01/2016 12:30:11", "01/01/2016 12:30:00", "01/01/2016 12:30:11", '',
+             "00:00:11", "00:00:10", "134.00000 GBs", "0.03246 GB",
+             "0.354 s", "2345", "57.400G", "57.400G",
+             0, 0, 0, 0, 0,
+             0., None, "20", "1")
 
     q = Queue("cluster01.q@host001", "BIP", "6/10/20", "4.71", "lx-amd64")
     qo = Queue("cluster01.q@host002", "BIP", "0/0/20", "0.03", "lx-amd64")
@@ -46,30 +79,35 @@ def print_detail(args, settings):
 
     pj = [jp] if args.pending_jobs else []
 
-    print "preview:"
-    print
+    print("preview:")
+    print()
     print_status([c, c2], pj)
-    print
-    print
-    print "full format preview (-e/-f):"
-    print
-    print "<cluster> used/total slot (rate)"
-    print "\t<queuename> qtype resv/used/tot load_avg " + (("use/" if args.physical_memory else '') +
-                                                           ("req/" if args.required_memory else '') +
-                                                           ("tot mem" if args.required_memory or args.physical_memory else '') +
-                                                           ("  use/tot swap" if args.swapped_memory else '') +
-                                                           "  arch states")
-    print
+    print()
+    print()
+    print("full format preview (-e/-f):")
+    print()
+    print("<cluster> used/total slot (rate)")
+    print(
+        "\t<queuename> qtype resv/used/tot load_avg " +
+        (
+            ("use/" if args.physical_memory else '') +
+            ("req/" if args.required_memory else '') +
+            ("tot mem" if args.required_memory or args.physical_memory else '') +
+            ("  use/tot swap" if args.swapped_memory else '') +
+            "  arch states"
+        )
+    )
+    print()
     print_full_status([c, c2], pj, not args.no_sort, True)
-    print
-    print
-    print "cluster status preview (-c):"
-    print
+    print()
+    print()
+    print("cluster status preview (-c):")
+    print()
     print_cluster_status([c, c2])
-    print
-    print
+    print()
+    print()
 
-    print "current default settings (edit ~/.cqstat_config.json to change these defaults):"
+    print("current default settings (edit ~/.cqstat_config.json to change these defaults):")
     l = max(map(len, settings))
     for k, v in sorted(settings.items()):
-        print "  {}\t{}".format(k.ljust(l+4), repr(v))
+        print("  {}\t{}".format(k.ljust(l+4), repr(v)))

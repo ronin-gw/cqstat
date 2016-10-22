@@ -1,3 +1,4 @@
+from __future__ import print_function
 from template import StateManager
 from lib import flatten, calc_suffix, add_suffix
 
@@ -76,15 +77,15 @@ class Cluster(StateManager):
                                                  str(self.tot).rjust(self.tot_len)))
 
     def print_status(self):
-        print "{}  {} ({:3}%){}".format(self.coloring(self.name.rjust(self.name_len)),
+        print("{}  {} ({:3}%){}".format(self.coloring(self.name.rjust(self.name_len)),
                                         self._get_r_u_t(),
                                         int(self.usage*100),
-                                        self._get_mem_status())
+                                        self._get_mem_status()))
 
     def print_simple_status(self):
-        print "{}  {} ({:3}%)".format(self.coloring(self.name.rjust(self.name_len)),
+        print("{}  {} ({:3}%)".format(self.coloring(self.name.rjust(self.name_len)),
                                       self._get_r_u_t(),
-                                      int(self.usage*100))
+                                      int(self.usage*100)))
 
     def get_infolen(self):
         return self.name_len, self.resv_len+self.used_len+self.tot_len+9, self._get_mem_len()

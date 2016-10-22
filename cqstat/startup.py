@@ -1,3 +1,9 @@
+from __future__ import print_function
+try:
+    basestring
+except NameError:
+    basestring = str
+
 import argparse
 import os
 import sys
@@ -106,7 +112,7 @@ def parse_args():
     formats.add_argument("-f", "--full",
                          action=Invert, default=settings["full"],
                          help="Display information with queue statuses.")
-    formats.add_argument("-F", "--full-with-res",
+    formats.add_argument("-F", "--full-with-resource",
                          nargs='*', action=split_comma, metavar="resource_name,...",
                          help="Full format with queue resource information.")
     formats.add_argument("-e", "--expand",
@@ -200,7 +206,7 @@ def parse_args():
     additional.add_argument("--cpu", action=Invert, default=settings["cpu"])
     additional.add_argument("--mem", action=Invert, default=settings["mem"])
     additional.add_argument("--io", action=Invert, default=settings["io"])
-    additional.add_argument("--low", action=Invert, default=settings["low"])
+    additional.add_argument("--iow", action=Invert, default=settings["iow"])
     additional.add_argument("--loops", action=Invert, default=settings["loops"])
     additional.add_argument("--vmem", action=Invert, default=settings["vmem"])
     additional.add_argument("--max-vmem", action=Invert, default=settings["max-vmem"])
@@ -230,6 +236,18 @@ def parse_args():
         setattr(args, "user_pattern", generate_pattern(args.user))
 
     # TODO: Define job search pattern
+
+    # Setting attributes from specified formats
+    enable_attrs = set()
+    if args.extra:
+        enable_attrs |= set(("ntckts", "project", "department", "cpu", "mem", "io",
+                             "tckts", "ovrts", "otckt", "ftckt", "stckt", "share"))
+    if args.urgency:
+        enable_attrs |= set(("nurg", "urg", "rrcontr", "wtcontr", "dicontr", "deadline"))
+    if args.priority:
+        enable_attrs |= set(("nurg", "nprior", "ntckts", "ppri"))
+    for attr in enable_attrs:
+        setattr(args, attr, getattr(args, attr) == settings[attr])
 
     # Return args of print help
     if args.help:
@@ -280,7 +298,7 @@ def _load_settings():
         "cpu": False,
         "mem": False,
         "io": False,
-        "low": False,
+        "iow": False,
         "loops": False,
         "vmem": False,
         "max-vmem": False,
@@ -319,7 +337,7 @@ def _load_settings():
                 "{}: {}".format(e.__class__.__name__, str(e))
             )
 
-    for k, v in user_settings.items():
+    for k, v in user_settings.copy().items():
         if k == "username":
             if not isinstance(v, basestring):
                 del user_settings["username"]
@@ -344,14 +362,9 @@ def _setup_class(args, settings):
     Coloring.enable = not args.bleach
     Coloring.COLOR = {k: v for k, v in settings.items() if k in ("red", "yellow", "green", "blue", "black")}
 
-    Cluster.required_memory = True if args.required_memory else False
-    Cluster.physical_memory = args.physical_memory
-    Cluster.swapped_memory = args.swapped_memory
-
-    Queue.required_memory = True if args.required_memory else False
-    Queue.physical_memory = args.physical_memory
-    Queue.swapped_memory = args.swapped_memory
+    Cluster.args = args
+    Queue.args = args
 
 
 if __name__ == "__main__":
-    print parse_args()
+    print(parse_args())

@@ -1,3 +1,4 @@
+from __future__ import print_function
 from template import StateManager
 from lib import calc_suffix
 
@@ -81,7 +82,7 @@ class Queue(StateManager):
         return self.slot_color('{}/{}/{}'.format(*map(lambda i: str(i).rjust(2), (self.resv, self.used, self.tot))))
 
     def print_status(self, indent=0):
-        print '\t'*indent + '{} {} {}  {}{}  {}  {}'.format(
+        print('\t'*indent + '{} {} {}  {}{}  {}  {}'.format(
             self.coloring(self.name.ljust(Queue.nodename_len)),
             self.qtype.rjust(3),
             self._get_r_u_t(),
@@ -89,18 +90,18 @@ class Queue(StateManager):
             self._get_mem_status(),
             self.arch,
             self.status
-        )
+        ))
 
     def key(self):
         keys = [self.status,
                 float(self.used)/self.tot if self.tot != 0 else 0.,
                 self.np_load]
 
-        if Queue.required_memory:
+        if Queue.args.required_memory:
             keys.append(self.rsvmemusage)
-        if Queue.physical_memory:
+        if Queue.args.physical_memory:
             keys.append(self.memusage)
-        if Queue.swapped_memory:
+        if Queue.args.swapped_memory:
             keys.append(self.swapusage)
 
         return tuple(keys)

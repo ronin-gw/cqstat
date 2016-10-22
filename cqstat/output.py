@@ -1,3 +1,4 @@
+from __future__ import print_function
 from cluster import Cluster
 
 
@@ -16,8 +17,8 @@ def print_cluster_status(clusters):
                                  "resv/used/tot (%)".center(slot_len),
                                  memhed.center(mem_len))
 
-    print header
-    print '-' * len(header)
+    print(header)
+    print('-' * len(header))
     for c in clusters:
         c.print_status()
 
@@ -26,8 +27,8 @@ def print_status(clusters, pending_jobs, print_header=False):
     if any((clusters and any(c.has_visible_job() for c in clusters),
             pending_jobs and any(j.is_visible for j in pending_jobs),
             print_header)):
-        print "job-ID   prior   name           user     state submit/start at     queue             slots ja-task-ID"
-        print '-' * 100
+        print("job-ID   prior   name           user     state submit/start at     queue             slots ja-task-ID")
+        print('-' * 100)
 
     for cluster in clusters:
         for queue in cluster.queues:
@@ -36,7 +37,7 @@ def print_status(clusters, pending_jobs, print_header=False):
                 if not status:
                     continue
 
-                print "{} {:.5f} {} {}  {}  {} {} {} {} {}".format(*(status[:7] + (queue.name,) + status[7:]))
+                print("{} {:.5f} {} {}  {}  {} {} {} {}".format(*(status[:7] + (queue.name,) + status[7:])))
 
     if pending_jobs:
         for job in pending_jobs:
@@ -60,12 +61,12 @@ def print_full_status(clusters, pending_jobs, sort, full):
             if not queue.has_visible_job():
                 continue
 
-            print "\t{}".format('-' * max(queue.get_infolen(), 85))
+            print("\t{}".format('-' * max(queue.get_infolen(), 85)))
             for job in queue.jobs:
                 job.print_status(indent=2)
 
     visible_job_num = sum(j.is_visible for j in pending_jobs) if pending_jobs else 0
     if visible_job_num:
-        print '\n' + '#'*30 + "{} PENDING JOBS".format(visible_job_num).center(20) + '#'*30
+        print('\n' + '#'*30 + "{} PENDING JOBS".format(visible_job_num).center(20) + '#'*30)
         for job in pending_jobs:
             job.print_status()
