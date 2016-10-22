@@ -4,6 +4,15 @@ from lib import calc_suffix
 
 
 class Job(Coloring):
+    attributes = ["job-ID", "prior", "nurg", "nprior", "ntckts",
+                  "urg", "rrcontr", "wtcontr", "dicontr", "ppri",
+                  "name", "user", "uid", "group", "gid", "sup_group",
+                  "project", "department", "state",
+                  "sub_strt_at", "sub_at", "strt_at", "deadline",
+                  "wallclock", "cpu", "mem", "io", "iow", "loops", "vmem", "max_vmem",
+                  "tckts", "ovrts", "otckt", "ftckt", "stckt", "share",
+                  "queue", "jclass", "slots", "ja_task_id"]
+
     def __init__(
         self, job_ID, prior, name, user, state, jclass,
         nurg=None, nprior=None, ntckts=None,
@@ -111,17 +120,9 @@ class Job(Coloring):
             coloring = self._color("blue")
         else:
             coloring = self._color()
+        self.state = coloring(self.state)
 
-        return (
-            self.id.ljust(8),
-            self.prior,
-            self.name.ljust(10),
-            self.user.center(12),
-            coloring(self.state.rjust(3)),
-            self.sub_strt_at,
-            str(self.slots).rjust(5),
-            self.ja_task_id
-        )
+        return tuple([self.id] + [getattr(self, n) for n in Job.attributes[1:]])
 
     def print_status(self, indent=0):
         if self.is_visible:

@@ -1,5 +1,35 @@
 from __future__ import print_function
+import re
+
 from cluster import Cluster
+from job import Job
+
+
+def _catch_ansi_code(group):
+    def _f(text):
+        m = re.match("^(\\x1b\[\d+m)?(.+?)(\\x1b\[0m)?$", text)
+        return (m.group(group) or '') if m else ''
+    return _f
+
+
+def _justify_string(header, table, strip_len=None):
+    table = [header] + table
+    ansi_stock = [map(_catch_ansi_code(1), v) for v in table]
+    table = [map(_catch_ansi_code(2), v) for v in table]
+    len_table = [map(len, v) for v in table]
+    if strip_len:
+        len_table.append(strip_len)
+
+    max_len = map(max, zip(*len_table))
+    table = (
+        [[a.ljust(i) for a, i in zip(table[0], max_len)]] +
+        [[a.rjust(i) for a, i in zip(v, max_len)] for v in table[1:]]
+    )
+    table = [
+        [a + r + "\x1b[0m" if a else r for r, a in zip(row, ansi)]
+        for row, ansi in zip(table, ansi_stock)
+    ]
+    return table[0], table[1:], max_len
 
 
 def print_cluster_status(clusters):
@@ -23,25 +53,28 @@ def print_cluster_status(clusters):
         c.print_status()
 
 
-def print_status(clusters, pending_jobs, print_header=False):
-    if any((clusters and any(c.has_visible_job() for c in clusters),
-            pending_jobs and any(j.is_visible for j in pending_jobs),
-            print_header)):
-        print("job-ID   prior   name           user     state submit/start at     queue             slots ja-task-ID")
-        print('-' * 100)
+def print_status(clusters, pending_jobs):
+    header = Job.attributes
+    jobs = []
 
     for cluster in clusters:
         for queue in cluster.queues:
             for job in queue.jobs:
-                status = job.get_status()
-                if not status:
-                    continue
+                job.queue = queue.name
+                jobs.append(job)
 
-                print("{} {:.5f} {} {}  {}  {} {} {} {}".format(*(status[:7] + (queue.name,) + status[7:])))
+    jobs = jobs + pending_jobs
+    job_status = [
+        map(lambda x: '' if x is None else str(x), status)
+        for status in map(lambda j: j.get_status(), jobs) if status
+    ]
 
-    if pending_jobs:
-        for job in pending_jobs:
-            job.print_status()
+    if job_status:
+        header, job_status, attr_lens = _justify_string(header, job_status)
+        print(' '.join(header))
+        print('-' * (sum(attr_lens) + len(header) - 1))
+        for j in job_status:
+            print(' '.join(j))
 
 
 def print_full_status(clusters, pending_jobs, sort, full):

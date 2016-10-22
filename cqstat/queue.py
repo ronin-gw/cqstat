@@ -97,11 +97,11 @@ class Queue(StateManager):
                 float(self.used)/self.tot if self.tot != 0 else 0.,
                 self.np_load]
 
-        if Queue.args.required_memory:
+        if Queue.required_memory:
             keys.append(self.rsvmemusage)
-        if Queue.args.physical_memory:
+        if Queue.physical_memory:
             keys.append(self.memusage)
-        if Queue.args.swapped_memory:
+        if Queue.swapped_memory:
             keys.append(self.swapusage)
 
         return tuple(keys)

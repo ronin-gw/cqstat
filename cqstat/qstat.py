@@ -59,7 +59,7 @@ def qstat(args):
     pending_jobs = pending_jobs if args.pending_jobs else None
 
     if not (args.cluster_only or args.expand or args.full):
-        print_status(clusters, pending_jobs, args.watch)
+        print_status(clusters, pending_jobs)
 
     elif args.required_memory:
         jobids = flatten(c.get_jobids() for c in clusters)

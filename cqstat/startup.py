@@ -13,6 +13,7 @@ import getpass
 from template import Coloring
 from cluster import Cluster
 from queue import Queue
+from job import Job
 from lib import generate_pattern, Re_dummy
 from test import print_detail
 
@@ -48,10 +49,10 @@ class ParseJobState(argparse.Action):
                 values = values.replace(status, '')
 
         if 'a' in values:
-            statuses = statuses | set("psr")
+            statuses |= set("psr")
             values = values.replace('a', '')
         if 'h' in values:
-            statuses = statuses | set(hold_statuses)
+            statuses |= set(hold_statuses)
             values = values.replace('h', '')
 
         if values:
@@ -198,7 +199,7 @@ def parse_args():
     additional.add_argument("--uid", action=Invert, default=settings["uid"])
     additional.add_argument("--group", action=Invert, default=settings["group"])
     additional.add_argument("--gid", action=Invert, default=settings["gid"])
-    additional.add_argument("--supplementary-group", action=Invert, default=settings["supplementary-group"])
+    additional.add_argument("--sup-group", action=Invert, default=settings["sup-group"])
     additional.add_argument("--project", action=Invert, default=settings["project"])
     additional.add_argument("--department", action=Invert, default=settings["department"])
     additional.add_argument("--deadline", action=Invert, default=settings["deadline"])
@@ -218,8 +219,6 @@ def parse_args():
     additional.add_argument("--share", action=Invert, default=settings["share"])
 
     args = parser.parse_args()
-
-    _setup_class(args, settings)
 
     # Build options for qstat call
     options = ''
@@ -248,6 +247,8 @@ def parse_args():
         enable_attrs |= set(("nurg", "nprior", "ntckts", "ppri"))
     for attr in enable_attrs:
         setattr(args, attr, getattr(args, attr) == settings[attr])
+
+    _setup_class(args, settings)
 
     # Return args of print help
     if args.help:
@@ -290,7 +291,7 @@ def _load_settings():
         "uid": False,
         "group": False,
         "gid": False,
-        "supplementary-group": False,
+        "sup-group": False,
         "project": False,
         "department": False,
         "deadline": False,
@@ -363,7 +364,19 @@ def _setup_class(args, settings):
     Coloring.COLOR = {k: v for k, v in settings.items() if k in ("red", "yellow", "green", "blue", "black")}
 
     Cluster.args = args
-    Queue.args = args
+
+    Queue.required_memory = args.required_memory
+    Queue.physical_memory = args.physical_memory
+    Queue.swapped_memory = args.swapped_memory
+
+    if args.split_ss_time:
+        Job.attributes.remove("sub_strt_at")
+    else:
+        Job.attributes.remove("sub_at")
+        Job.attributes.remove("strt_at")
+    for attr in [k for k, v in vars(args).items() if v is False]:
+        if attr in Job.attributes:
+            Job.attributes.remove(attr)
 
 
 if __name__ == "__main__":
