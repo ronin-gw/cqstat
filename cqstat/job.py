@@ -100,16 +100,8 @@ class Job(Coloring):
         # define status
         self.is_visible = False
 
-    def visible(self):
-        self.is_visible = True
-
-    def set_vmem(self, vmem):
-        self.reserved_memory = calc_suffix(vmem[self.id]) * int(self.slots)
-
-    def get_status(self, indent=0):
-        if not self.is_visible:
-            return None
-
+        # colorize state
+        self._state = self.state
         if 'E' in self.state:
             coloring = self._color("red")
         elif 'w' in self.state or self.state == "Rq":
@@ -120,10 +112,20 @@ class Job(Coloring):
             coloring = self._color("blue")
         else:
             coloring = self._color()
-        self.state = coloring(self.state)
+        self.col_state = coloring(self.state)
 
-        return tuple([self.id] + [getattr(self, n) for n in Job.attributes[1:]])
+    def visible(self):
+        self.is_visible = True
 
-    def print_status(self, indent=0):
-        if self.is_visible:
-            print('\t'*indent + "{} {:.5f} {} {}  {}  {} {} {}".format(*self.get_status(indent)))
+    def set_vmem(self, vmem):
+        self.reserved_memory = calc_suffix(vmem[self.id]) * int(self.slots)
+
+    def get_status(self):
+        if not self.is_visible:
+            return None
+
+        self.state = self.col_state
+        status = tuple([self.id] + [getattr(self, n) for n in Job.attributes[1:]])
+        self.state = self._state
+
+        return status

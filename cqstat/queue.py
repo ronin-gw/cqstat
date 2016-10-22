@@ -82,7 +82,7 @@ class Queue(StateManager):
         return self.slot_color('{}/{}/{}'.format(*map(lambda i: str(i).rjust(2), (self.resv, self.used, self.tot))))
 
     def print_status(self, indent=0):
-        print('\t'*indent + '{} {} {}  {}{}  {}  {}'.format(
+        print(' '*8*indent + '{} {} {}  {}{}  {}  {}'.format(
             self.coloring(self.name.ljust(Queue.nodename_len)),
             self.qtype.rjust(3),
             self._get_r_u_t(),
