@@ -46,6 +46,13 @@ def _justify_string_with_header(header, table, strip_len=None):
     return table[0], table[1:], max_len
 
 
+def _get_visible_job_status(jobs):
+    return [
+        map(lambda x: 'NA' if x is None else str(x), status)
+        for status in map(lambda j: j.get_status(), jobs) if status
+    ]
+
+
 def print_cluster_status(clusters):
     for attr in ("name", "used", "resv", "tot", "memtot", "rsvmem", "memuse", "swapus", "swapto"):
         setattr(Cluster, attr+"_len", max(len(str(getattr(c, attr, ''))) for c in clusters))
@@ -77,11 +84,7 @@ def print_status(clusters, pending_jobs):
                 job.queue = queue.name
                 jobs.append(job)
 
-    jobs = jobs + pending_jobs
-    job_status = [
-        map(lambda x: 'NA' if x is None else str(x), status)
-        for status in map(lambda j: j.get_status(), jobs) if status
-    ]
+    job_status = _get_visible_job_status(jobs + pending_jobs)
 
     if job_status:
         header, job_status, attr_lens = _justify_string_with_header(header, job_status)
@@ -110,12 +113,7 @@ def print_full_status(clusters, pending_jobs, sort, full):
             if not queue.has_visible_job():
                 continue
 
-            job_status = [
-                map(lambda x: 'NA' if x is None else str(x), status)
-                for status in map(lambda j: j.get_status(), queue.jobs) if status
-            ]
-
-            job_status, attr_lens = _justify_string(job_status)
+            job_status, attr_lens = _justify_string(_get_visible_job_status(queue.jobs))
 
             if job_status:
                 print((' ' * 8) + ('-' * (sum(attr_lens) + len(attr_lens) + 7)))
@@ -125,10 +123,7 @@ def print_full_status(clusters, pending_jobs, sort, full):
 
     visible_job_num = sum(j.is_visible for j in pending_jobs) if pending_jobs else 0
     if visible_job_num:
-        job_status = [
-            map(lambda x: 'NA' if x is None else str(x), status)
-            for status in map(lambda j: j.get_status(), pending_jobs) if status
-        ]
+        job_status = _get_visible_job_status(pending_jobs)
 
         header, job_status, attr_lens = _justify_string_with_header(Job.attributes, job_status)
         row_length = sum(attr_lens) + len(attr_lens) - 1
