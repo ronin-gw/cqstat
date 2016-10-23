@@ -5,12 +5,37 @@ from cluster import Cluster
 from queue import Queue
 from job import Job
 
+TAG2KWARG = dict(
+    JB_job_number="job_ID", JAT_prio="prior", JAT_ntix="ntckts", JB_nppri="nprior",
+    JB_nurg="nurg", JB_urg="urg", JB_rrcontr="rrcontr", JB_wtcontr="wtcontr",
+    JB_dlcontr="dlcontr", JB_priority="ppri", JB_name="name", JB_owner="user",
+    JB_project="project", JB_department="department", state="state",
+    JB_submission_time="sub_at", JAT_start_time="strt_at", JB_deadline="deadline",
+    cpu_usage="cpu", mem_usage="mem", io_usage="io", tickets="tckts",
+    JB_override_tickets="ovrts", JB_jobshare="jobshare", otickets="otckt",
+    ftickets="ftckt", stickets="stckt", JAT_share="share", queue_name="queue",
+    master="master_q", slots="slots", tasks="ja_task_id", hard_req_queue="h_resources",
+    soft_req_queue="s_resources", master_hard_req_queue="master_h_res"
+)
+# predecessor_jobs_req, predecessor_jobs, requested_pe, granted_pe, JB_checkpoint_name. hard_request, def_hard_request, soft_request
+
+
+def _parse_jobs(elems):
+    return [
+        Job(**{TAG2KWARG[e.tag]: e.text for e in element if e.tag in TAG2KWARG})
+        for element in elems
+    ]
+
 
 def get_reduced_info(options):
     command = "qstat -xml" + options
     output = subprocess.check_output(command.split())
 
     root = ElementTree.fromstring(output)
+    running_jobs = _parse_jobs(root.findall("queue_info/job_list"))
+    pending_jobs = _parse_jobs(root.findall("job_info/joblist"))
+
+    return running_jobs, pending_jobs
 
 
 def build_cluster(options, users):
@@ -121,3 +146,13 @@ def _resource_generator(output, rstr):
             yield jobid, mem
     else:
         yield jobid, mem
+
+
+if __name__ == "__main__":
+    import sys
+    t = ElementTree.parse(sys.argv[1])
+    root = t.getroot()
+    running_jobs = _parse_jobs(root.findall("queue_info/job_list"))
+    pending_jobs = _parse_jobs(root.findall("job_info/job_list"))
+    print(running_jobs)
+    print(pending_jobs)
