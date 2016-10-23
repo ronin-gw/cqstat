@@ -13,7 +13,8 @@ def main():
 
     try:
         qstat.main()
-    except IOError as (errno, strerror):
+    except IOError as e:
+        errno, strerror = e
         if errno == 32:  # Broken pipe
             pass
         else:

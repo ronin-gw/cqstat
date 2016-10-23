@@ -3,8 +3,11 @@ import time
 import array
 from termios import TIOCGWINSZ
 import fcntl
-import cStringIO
 import contextlib
+try:
+    import cStringIO
+except ImportError:
+    from io import StringIO as cStringIO
 
 from startup import parse_args
 from lib import flatten

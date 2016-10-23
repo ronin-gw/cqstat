@@ -1,4 +1,7 @@
 import re
+import sys
+if sys.version_info > (3, ):
+    from functools import reduce
 
 
 def calc_suffix(num):
