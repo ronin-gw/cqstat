@@ -1,5 +1,4 @@
 from __future__ import print_function
-import re
 
 from cluster import Cluster
 from job import Job
@@ -102,7 +101,6 @@ def print_full_status(clusters, pending_jobs, sort, full):
                 print((' ' * 8) + ('-' * (sum(attr_lens) + len(attr_lens) + 7)))
             for j in job_status:
                 print((' ' * 16) + ' '.join(j))
-
 
     visible_job_num = sum(j.is_visible for j in pending_jobs) if pending_jobs else 0
     if visible_job_num:

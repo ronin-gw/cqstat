@@ -194,7 +194,7 @@ def parse_args():
     additional.add_argument("--urg", action=Invert, default=settings["urg"])
     additional.add_argument("--rrcontr", action=Invert, default=settings["rrcontr"])
     additional.add_argument("--wtcontr", action=Invert, default=settings["wtcontr"])
-    additional.add_argument("--dicontr", action=Invert, default=settings["dicontr"])
+    additional.add_argument("--dlcontr", action=Invert, default=settings["dlcontr"])
     additional.add_argument("--ppri", action=Invert, default=settings["ppri"])
     additional.add_argument("--uid", action=Invert, default=settings["uid"])
     additional.add_argument("--group", action=Invert, default=settings["group"])
@@ -222,7 +222,7 @@ def parse_args():
 
     EXT_ATTRS = set(["ntckts", "project", "department", "cpu", "mem", "io",
                      "tckts", "ovrts", "otckt", "ftckt", "stckt", "share"])
-    URG_ATTRS = set(["nurg", "urg", "rrcontr", "wtcontr", "dicontr", "deadline"])
+    URG_ATTRS = set(["nurg", "urg", "rrcontr", "wtcontr", "dlcontr", "deadline"])
     PRI_ATTRS = set(["nurg", "nprior", "ntckts", "ppri"])
     JVI_ATTRS = set(["uid", "group", "gid", "sup_group", "department", "sub_at",
                      "strt_at", "wallclock", "cpu", "mem", "io", "iow", "loops",
@@ -326,7 +326,7 @@ def _load_settings():
         "urg": False,
         "rrcontr": False,
         "wtcontr": False,
-        "dicontr": False,
+        "dlcontr": False,
         "ppri": False,
         "uid": False,
         "group": False,
