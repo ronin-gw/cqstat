@@ -5,52 +5,36 @@ from cluster import Cluster
 from job import Job
 
 
-def _catch_ansi_code(group):
-    def _f(text):
-        m = re.match("^(\\x1b\[\d+m)?(.+?)(\\x1b\[0m)?$", text)
-        return (m.group(group) or '') if m else ''
-    return _f
-
-
-def _decomp_attrs(table, strip_len):
-    ansi_stock = [map(_catch_ansi_code(1), v) for v in table]
-    table = [map(_catch_ansi_code(2), v) for v in table]
+def _get_width(table, strip_len):
     len_table = [map(len, v) for v in table]
     if strip_len:
         len_table.append(strip_len)
 
-    max_len = map(max, zip(*len_table))
-    return table, ansi_stock, max_len
+    return list(map(max, zip(*len_table)))
 
 
 def _justify_string(table, strip_len=None):
-    table, ansi_stock, max_len = _decomp_attrs(table, strip_len)
-    table = [[a.rjust(i) for a, i in zip(v, max_len)] for v in table]
-    table = [
-        [a + r + "\x1b[0m" if a else r for r, a in zip(row, ansi)]
-        for row, ansi in zip(table, ansi_stock)
-    ]
+    striptable = [map(lambda a: a.strfunc(0), v) for v in table]
+
+    max_len = _get_width(striptable, strip_len)
+    table = [[a.strfunc(i) for a, i in zip(v, max_len)] for v in table]
+
     return table, max_len
 
 
-def _justify_string_with_header(header, table, strip_len=None):
-    table, ansi_stock, max_len = _decomp_attrs([header] + table, strip_len)
-    table = (
-        [[a.ljust(i) for a, i in zip(table[0], max_len)]] +
-        [[a.rjust(i) for a, i in zip(v, max_len)] for v in table[1:]]
-    )
-    table = [
-        [a + r + "\x1b[0m" if a else r for r, a in zip(row, ansi)]
-        for row, ansi in zip(table, ansi_stock)
-    ]
-    return table[0], table[1:], max_len
+def _justify_string_with_header(table, strip_len=None):
+    header = list(map(lambda a: a.name, table[0]))
+    striptable = [map(lambda a: a.strfunc(0), v) for v in table]
+
+    max_len = _get_width([header] + striptable, strip_len)
+    header = [a.ljust(i) for a, i in zip(header, max_len)]
+    table = [[a.strfunc(i) for a, i in zip(v, max_len)] for v in table]
+
+    return header, table, max_len
 
 
 def _get_visible_job_status(jobs):
-    return [
-        map(lambda x: 'NA' if x is None else str(x), status)
-        for status in map(lambda j: j.get_status(), jobs) if status
-    ]
+    return [status for status in map(lambda j: j.get_attributes(), jobs) if status]
 
 
 def print_cluster_status(clusters):
@@ -75,7 +59,6 @@ def print_cluster_status(clusters):
 
 
 def print_status(clusters, pending_jobs):
-    header = Job.attributes
     jobs = []
 
     for cluster in clusters:
@@ -87,7 +70,7 @@ def print_status(clusters, pending_jobs):
     job_status = _get_visible_job_status(jobs + pending_jobs)
 
     if job_status:
-        header, job_status, attr_lens = _justify_string_with_header(header, job_status)
+        header, job_status, attr_lens = _justify_string_with_header(job_status)
         print(' '.join(header))
         print('-' * (sum(attr_lens) + len(header) - 1))
         for j in job_status:
@@ -125,7 +108,7 @@ def print_full_status(clusters, pending_jobs, sort, full):
     if visible_job_num:
         job_status = _get_visible_job_status(pending_jobs)
 
-        header, job_status, attr_lens = _justify_string_with_header(Job.attributes, job_status)
+        header, job_status, attr_lens = _justify_string_with_header(job_status)
         row_length = sum(attr_lens) + len(attr_lens) - 1
 
         print('\n' + "   {} PENDING JOBS   ".format(visible_job_num).center(row_length, '#'))
