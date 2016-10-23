@@ -47,39 +47,36 @@ class JobAttribute(Coloring):
     def __init__(self, name, value, strfunc='r'):
         self.name = name
 
-        try:
-            if strfunc == 'r':
-                self.strfunc = self.rjust
-                self.value = value
-            elif strfunc == 'c':
-                self.strfunc = self.center
-                self.value = value
-            elif strfunc == 'l':
-                self.strfunc = self.ljust
-                self.value = value
-            elif strfunc == "f5":
-                self.strfunc = self.float5
-                self.value = float(value)
-            elif strfunc == "f2":
-                self.strfunc = self.float2
-                self.value = float(value)
-            elif strfunc == 'i':
-                self.strfunc = self.int
-                self.value = int(value)
-            elif strfunc == "state":
-                self.strfunc = self.state
-                self.value = value
-            elif strfunc == 'd':
-                self.strfunc = self.datetime
-                self.value = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
-            else:
-                self.strfunc = strfunc
-                self.value = value
-        except TypeError as e:
-            if value is None:
-                self.value = "NA"
-            else:
-                raise(e)
+        if value is None:
+            self.strfunc = lambda l: ' '*l
+            self.value = "NA"
+        elif strfunc == 'r':
+            self.strfunc = self.rjust
+            self.value = value
+        elif strfunc == 'c':
+            self.strfunc = self.center
+            self.value = value
+        elif strfunc == 'l':
+            self.strfunc = self.ljust
+            self.value = value
+        elif strfunc == "f5":
+            self.strfunc = self.float5
+            self.value = float(value)
+        elif strfunc == "f2":
+            self.strfunc = self.float2
+            self.value = float(value)
+        elif strfunc == 'i':
+            self.strfunc = self.int
+            self.value = int(value)
+        elif strfunc == "state":
+            self.strfunc = self.state
+            self.value = value
+        elif strfunc == 'd':
+            self.strfunc = self.datetime
+            self.value = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+        else:
+            self.strfunc = strfunc
+            self.value = value
 
 
 class Job(object):
@@ -193,8 +190,8 @@ class Job(object):
     def set_vmem(self, vmem):
         self.reserved_memory = calc_suffix(vmem[self.id.value]) * int(self.slots.value)
 
-    def get_attributes(self):
-        if not self.is_visible:
+    def get_attributes(self, visible_only=True):
+        if not self.is_visible and visible_only:
             return None
 
         return tuple([getattr(self, n) for n in Job.attributes])

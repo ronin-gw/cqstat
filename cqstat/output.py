@@ -32,8 +32,8 @@ def _justify_string_with_header(table, strip_len=None):
     return header, table, max_len
 
 
-def _get_visible_job_status(jobs):
-    return [status for status in map(lambda j: j.get_attributes(), jobs) if status]
+def _get_job_status(jobs, visible_only=True):
+    return [status for status in map(lambda j: j.get_attributes(visible_only), jobs) if status]
 
 
 def print_cluster_status(clusters):
@@ -57,6 +57,17 @@ def print_cluster_status(clusters):
         c.print_status()
 
 
+def print_job_status(jobs, visible_only=True):
+    job_status = _get_job_status(jobs, visible_only)
+
+    if job_status:
+        header, job_status, attr_lens = _justify_string_with_header(job_status)
+        print(' '.join(header))
+        print('-' * (sum(attr_lens) + len(header) - 1))
+        for j in job_status:
+            print(' '.join(j))
+
+
 def print_status(clusters, pending_jobs):
     jobs = []
 
@@ -66,14 +77,7 @@ def print_status(clusters, pending_jobs):
                 job.queue = queue.name
                 jobs.append(job)
 
-    job_status = _get_visible_job_status(jobs + pending_jobs)
-
-    if job_status:
-        header, job_status, attr_lens = _justify_string_with_header(job_status)
-        print(' '.join(header))
-        print('-' * (sum(attr_lens) + len(header) - 1))
-        for j in job_status:
-            print(' '.join(j))
+    print_job_status(jobs + pending_jobs)
 
 
 def print_full_status(clusters, pending_jobs, sort, full):
@@ -95,7 +99,7 @@ def print_full_status(clusters, pending_jobs, sort, full):
             if not queue.has_visible_job():
                 continue
 
-            job_status, attr_lens = _justify_string(_get_visible_job_status(queue.jobs))
+            job_status, attr_lens = _justify_string(_get_job_status(queue.jobs))
 
             if job_status:
                 print((' ' * 8) + ('-' * (sum(attr_lens) + len(attr_lens) + 7)))
@@ -104,7 +108,7 @@ def print_full_status(clusters, pending_jobs, sort, full):
 
     visible_job_num = sum(j.is_visible for j in pending_jobs) if pending_jobs else 0
     if visible_job_num:
-        job_status = _get_visible_job_status(pending_jobs)
+        job_status = _get_job_status(pending_jobs)
 
         header, job_status, attr_lens = _justify_string_with_header(job_status)
         row_length = sum(attr_lens) + len(attr_lens) - 1

@@ -281,12 +281,11 @@ def parse_args():
     setattr(args, "options", options)
 
     # Define username search pattern
+    # TODO: add -u option
     if args.all_user:
         setattr(args, "user_pattern", Re_dummy(True))
     else:
         setattr(args, "user_pattern", generate_pattern(args.user))
-
-    # TODO: Define job search pattern
 
     _setup_class(args, settings)
 

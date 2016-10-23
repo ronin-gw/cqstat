@@ -8,8 +8,8 @@ import contextlib
 
 from startup import parse_args
 from lib import flatten
-from qcommand import build_cluster, add_host_info, get_resource_option
-from output import print_cluster_status, print_full_status, print_status
+from qcommand import get_reduced_info, build_cluster, add_host_info, get_resource_option
+from output import print_job_status, print_cluster_status, print_full_status, print_status
 
 
 def main():
@@ -55,13 +55,20 @@ def watch_qstat(args):
 
 
 def qstat(args):
-    clusters, pending_jobs = build_cluster(args.options, args.user_pattern)
-    pending_jobs = pending_jobs if args.pending_jobs else None
+    if not any((args.cluster_only, args.full, args.full_with_resource, args.expand, args.resource_req, args.job)):
+        running_jobs, pending_jobs = get_reduced_info(args.options)
+        print_job_status(running_jobs + pending_jobs, visible_only=False)
 
-    if not (args.cluster_only or args.expand or args.full):
-        print_status(clusters, pending_jobs)
+    # clusters, pending_jobs = build_cluster(args.options, args.user_pattern)
+    # pending_jobs = pending_jobs if args.pending_jobs else None
+    #
+    # if not (args.cluster_only or args.expand or args.full):
+    #     print_status(clusters, pending_jobs)
 
     elif args.required_memory:
+        clusters, pending_jobs = build_cluster(args.options, args.user_pattern)
+        pending_jobs = pending_jobs if args.pending_jobs else None
+
         jobids = flatten(c.get_jobids() for c in clusters)
         if isinstance(args.required_memory, str):
             vmem_list = get_resource_option(jobids, args.required_memory)
