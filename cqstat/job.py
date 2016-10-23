@@ -1,4 +1,6 @@
 from __future__ import print_function
+import datetime
+
 from template import Coloring
 from lib import calc_suffix
 
@@ -39,38 +41,50 @@ class JobAttribute(Coloring):
 
         return coloring(self.value.center(l))
 
+    def datetime(self, l):
+        return self.value.strftime("%Y-%m-%d %H:%M:%S").ljust(l)
+
     def __init__(self, name, value, strfunc='r'):
         self.name = name
 
-        if strfunc == 'r':
-            self.strfunc = self.rjust
-            self.value = value
-        elif strfunc == 'c':
-            self.strfunc = self.center
-            self.value = value
-        elif strfunc == 'l':
-            self.strfunc = self.ljust
-            self.value = value
-        elif strfunc == "f5":
-            self.strfunc = self.float5
-            self.value = float(value)
-        elif strfunc == "f2":
-            self.strfunc = self.float2
-            self.value = float(value)
-        elif strfunc == 'i':
-            self.strfunc = self.int
-            self.value = int(value)
-        elif strfunc == "state":
-            self.strfunc = self.state
-            self.value = value
-        else:
-            self.strfunc = strfunc
-            self.value = value
+        try:
+            if strfunc == 'r':
+                self.strfunc = self.rjust
+                self.value = value
+            elif strfunc == 'c':
+                self.strfunc = self.center
+                self.value = value
+            elif strfunc == 'l':
+                self.strfunc = self.ljust
+                self.value = value
+            elif strfunc == "f5":
+                self.strfunc = self.float5
+                self.value = float(value)
+            elif strfunc == "f2":
+                self.strfunc = self.float2
+                self.value = float(value)
+            elif strfunc == 'i':
+                self.strfunc = self.int
+                self.value = int(value)
+            elif strfunc == "state":
+                self.strfunc = self.state
+                self.value = value
+            elif strfunc == 'd':
+                self.strfunc = self.datetime
+                self.value = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+            else:
+                self.strfunc = strfunc
+                self.value = value
+        except TypeError as e:
+            if value is None:
+                self.value = "NA"
+            else:
+                raise(e)
 
 
 class Job(object):
     attributes = ["id", "prior", "nurg", "nprior", "ntckts",
-                  "urg", "rrcontr", "wtcontr", "dicontr", "ppri",
+                  "urg", "rrcontr", "wtcontr", "dlcontr", "ppri",
                   "name", "user", "uid", "group", "gid", "sup_group",
                   "project", "department", "state",
                   "sub_strt_at", "sub_at", "strt_at", "deadline",
@@ -85,16 +99,16 @@ class Job(object):
             self.__dict__[name] = value
 
     def __init__(
-        self, job_ID, prior, name, user, state, jclass,
+        self, job_ID, prior, name, user, state, jclass=None,
         nurg=None, nprior=None, ntckts=None,
-        urg=None, rrcontr=None, wtcontr=None, dicontr=None, ppri=None,
+        urg=None, rrcontr=None, wtcontr=None, dlcontr=None, ppri=None,
         uid=None, group=None, gid=None, sup_group=None,
         project=None, department=None,
         sub_strt_at=None, sub_at=None, strt_at=None, deadline=None,
         wallclock=None, cpu=None, mem=None, io=None,
         iow=None, loops=None, vmem=None, max_vmem=None,
         tckts=None, ovrts=None, otckt=None, ftckt=None, stckt=None,
-        share=None, queue=None, slots=None, ja_task_id=None,
+        share=None, jobshare=None, queue=None, slots=None, ja_task_id=None,
         master_q=None, h_resources=None, master_h_res=None, s_resources=None, binding=None,
         sge_o_home=None, sge_o_log_name=None, sge_o_path=None,
         sge_o_shell=None, sge_o_workdir=None, sge_o_host=None,
@@ -116,7 +130,7 @@ class Job(object):
         self.urg = attr("urg", urg)
         self.rrcontr = attr("rrcontr", rrcontr)
         self.wtcontr = attr("wtcontr", wtcontr)
-        self.dicontr = attr("dicontr", dicontr)
+        self.dlcontr = attr("dlcontr", dlcontr)
         self.ppri = attr("ppri", ppri)
         self.uid = attr("uid", uid)
         self.group = attr("group", group, 'l')
@@ -124,10 +138,10 @@ class Job(object):
         self.sup_group = attr("sup_group", sup_group, 'l')
         self.project = attr("project", project, 'l')
         self.department = attr("department", department, 'l')
-        self.sub_strt_at = attr("sub_strt_at", sub_strt_at)
-        self.sub_at = attr("sub_at", sub_at)
-        self.strt_at = attr("strt_at", strt_at)
-        self.deadline = attr("deadline", deadline)
+        self.sub_strt_at = attr("sub_strt_at", sub_strt_at, 'd')
+        self.sub_at = attr("sub_at", sub_at, 'd')
+        self.strt_at = attr("strt_at", strt_at, 'd')
+        self.deadline = attr("deadline", deadline, 'd')
         self.wallclock = attr("wallclock", wallclock)
         self.cpu = attr("cpu", cpu)
         self.mem = attr("mem", mem)
@@ -142,6 +156,7 @@ class Job(object):
         self.ftckt = attr("ftckt", ftckt)
         self.stckt = attr("stckt", stckt)
         self.share = attr("share", share, "f2")
+        self.jobshare = attr("jobshare", jobshare, 'i')
         self.queue = attr("queue", queue)
         self.slots = attr("slots", slots)
         self.ja_task_id = attr("ja_task_id", ja_task_id, 'l')
