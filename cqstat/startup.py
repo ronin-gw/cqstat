@@ -1,14 +1,11 @@
 from __future__ import print_function
-try:
-    basestring
-except NameError:
-    basestring = str
 
 import argparse
 import os
 import sys
 import json
 import getpass
+import itertools
 
 from template import Coloring
 from cluster import Cluster
@@ -16,6 +13,10 @@ from queue import Queue
 from job import Job
 from lib import generate_pattern, Re_dummy
 from test import print_detail
+
+if sys.version_info > (3, ):
+    basestring = str
+    from functools import reduce
 
 CONFIG_PATH = "~/.cqstat_config.json"
 
@@ -116,9 +117,9 @@ def parse_args():
     formats.add_argument("-F", "--full-with-resource",
                          nargs='*', action=split_comma, metavar="resource_name,...",
                          help="Full format with queue resource information.")
-    formats.add_argument("-e", "--expand",
+    formats.add_argument("-e", "-ne", "--expand",
                          action=Invert, default=settings["expand"],
-                         help="Full format display of information only visible jobs. (same as -ne)")
+                         help="Full format display of information only visible jobs.")
     formats.add_argument("-ext", "--extra",
                          action=Invert, default=settings["extra"],
                          help="Add ticket information.")
@@ -157,7 +158,7 @@ def parse_args():
                          action=ParseQueueState, metavar="{p|r|s|z|hu|ho|hs|hd|hj|ha|h|a}[+]",
                          help="Filter by queue status")
 
-    memory = parser.add_argument_group("memory", "Add memory informations")
+    memory = parser.add_argument_group("memory", "Add memory information for each queue")
     memory.add_argument("-m", "--required-memory",
                         nargs='?', choices=("s_vmem", "mem_req"),
                         action=Invert, default=settings["required-memory"],
@@ -169,14 +170,13 @@ def parse_args():
                         action=Invert, default=settings["swapped-memory"],
                         help="Add host swap usage")
 
-    parser.add_argument("-p", "--pending-jobs",
-                        action=Invert, default=settings["pending-jobs"],
-                        help="Display pending jobs")
-
     others = parser.add_argument_group("others", "Some useful options")
     others.add_argument("-w", "--watch",
                         nargs='?', const=settings["watch"], default=False, metavar="sec",
                         help="Show status periodically (like watch command)")
+    others.add_argument("-p", "--pending-jobs",
+                        action=Invert, default=settings["pending-jobs"],
+                        help="Display pending jobs")
     others.add_argument("--no-sort",
                         action=Invert, default=settings["no-sort"],
                         help="Disable sorting (As default, hosts are sorted by their status, usage and load average.)")
@@ -220,12 +220,64 @@ def parse_args():
 
     args = parser.parse_args()
 
+    EXT_ATTRS = set(["ntckts", "project", "department", "cpu", "mem", "io",
+                     "tckts", "ovrts", "otckt", "ftckt", "stckt", "share"])
+    URG_ATTRS = set(["nurg", "urg", "rrcontr", "wtcontr", "dicontr", "deadline"])
+    PRI_ATTRS = set(["nurg", "nprior", "ntckts", "ppri"])
+    JVI_ATTRS = set(["uid", "group", "gid", "sup_group", "department", "sub_at",
+                     "strt_at", "wallclock", "cpu", "mem", "io", "iow", "loops",
+                     "vmem", "max_vmem", "share"])
+
+    setattr(args, "need_jvi", True if args.required_memory else False)
+
+    # Setting attributes from specified formats
+    enable_attrs = set()
+    if args.extra:
+        enable_attrs |= EXT_ATTRS
+    if args.urgency:
+        enable_attrs |= URG_ATTRS
+    if args.priority:
+        enable_attrs |= PRI_ATTRS
+    for attr in enable_attrs:
+        setattr(args, attr, getattr(args, attr) == settings[attr])
+
     # Build options for qstat call
+    set_pairs = ((" -ext ", EXT_ATTRS), (" -urg ", URG_ATTRS), (" -pri ", PRI_ATTRS), ("jvi", JVI_ATTRS))
+    required_attrs = set([a for a, v in vars(args).items() if (a in Job.attributes) and (v is True)])
+
+    conbinations = reduce(
+        lambda a, b: a + b,
+        [list(itertools.combinations(set_pairs, i)) for i in range(0, 5)],
+        []
+    )
+    for c in conbinations:
+        if c:
+            required_args, attrs = zip(*c)
+        else:
+            required_args, attrs = [], []
+        attr_set = reduce(lambda s, t: s.union(t), attrs, set())
+        if required_attrs <= attr_set:
+            break
+    else:
+        raise ValueError("Can't cover requred attribute: {}".format(required_attrs - attr_set))
+
     options = ''
+    for a in required_args:
+        if a == "jvi":
+            setattr(args, "need_jvi", True)
+        else:
+            options += a
     if args.resource:
-        options += " -l " + ','.join(args.resource)
+        options += " -l " + ','.join("{}={}".format(k, v) if v else k for k, v in args.resource.items())
+    if args.paralell_env:
+        options += " -pe " + ','.join(args.paralell_env)
     if args.queue:
         options += " -q " + ','.join(args.queue)
+    if args.job_state:
+        options += " -s {} ".format(''.join(args.job_state))
+    if args.queue_state:
+        options += " -qs {} ".format(''.join(args.queue_state))
+
     setattr(args, "options", options)
 
     # Define username search pattern
@@ -235,18 +287,6 @@ def parse_args():
         setattr(args, "user_pattern", generate_pattern(args.user))
 
     # TODO: Define job search pattern
-
-    # Setting attributes from specified formats
-    enable_attrs = set()
-    if args.extra:
-        enable_attrs |= set(("ntckts", "project", "department", "cpu", "mem", "io",
-                             "tckts", "ovrts", "otckt", "ftckt", "stckt", "share"))
-    if args.urgency:
-        enable_attrs |= set(("nurg", "urg", "rrcontr", "wtcontr", "dicontr", "deadline"))
-    if args.priority:
-        enable_attrs |= set(("nurg", "nprior", "ntckts", "ppri"))
-    for attr in enable_attrs:
-        setattr(args, attr, getattr(args, attr) == settings[attr])
 
     _setup_class(args, settings)
 

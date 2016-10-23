@@ -1,8 +1,16 @@
 import subprocess
+from xml.etree import ElementTree
 
 from cluster import Cluster
 from queue import Queue
 from job import Job
+
+
+def get_reduced_info(options):
+    command = "qstat -xml" + options
+    output = subprocess.check_output(command.split())
+
+    root = ElementTree.fromstring(output)
 
 
 def build_cluster(options, users):

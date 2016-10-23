@@ -144,7 +144,7 @@ class Job(object):
         self.share = attr("share", share, "f2")
         self.queue = attr("queue", queue)
         self.slots = attr("slots", slots)
-        self.ja_task_id = attr("ja_task_id", ja_task_id)
+        self.ja_task_id = attr("ja_task_id", ja_task_id, 'l')
         self.master_q = attr("master_q", master_q)
         self.h_resources = attr("h_resources", h_resources)
         self.master_h_res = attr("master_h_res", master_h_res)
