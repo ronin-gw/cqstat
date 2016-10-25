@@ -229,6 +229,8 @@ def parse_args():
                      "vmem", "max_vmem", "share"])
 
     setattr(args, "need_jvi", True if args.required_memory else False)
+    setattr(args, "full_format", any((args.full, args.full_with_resource,
+                                      args.expand, args.resource_req)))
 
     # Setting attributes from specified formats
     enable_attrs = set()
@@ -267,6 +269,10 @@ def parse_args():
             setattr(args, "need_jvi", True)
         else:
             options += a
+    if args.all_user or (any((args.cluster_only, args.full_format)) and args.required_memory):
+        options += " -u * "
+    elif args.user and not args.user == [settings["username"]]:
+        options += " -u {} ".format('.'.join(args.user))
     if args.resource:
         options += " -l " + ','.join("{}={}".format(k, v) if v else k for k, v in args.resource.items())
     if args.paralell_env:

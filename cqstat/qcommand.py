@@ -29,11 +29,12 @@ def _parse_jobs(elems):
 
 def get_reduced_info(options):
     command = "qstat -xml" + options
+
     output = subprocess.check_output(command.split())
 
     root = ElementTree.fromstring(output)
     running_jobs = _parse_jobs(root.findall("queue_info/job_list"))
-    pending_jobs = _parse_jobs(root.findall("job_info/joblist"))
+    pending_jobs = _parse_jobs(root.findall("job_info/job_list"))
 
     return running_jobs, pending_jobs
 
