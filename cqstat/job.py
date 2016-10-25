@@ -42,7 +42,7 @@ class JobAttribute(Coloring):
         return coloring(self.value.center(l))
 
     def datetime(self, l):
-        return self.value.strftime("%Y-%m-%d %H:%M:%S").ljust(l)
+        return self.value.strftime("%Y-%m-%d %H:%M:%S ").ljust(l)
 
     def __init__(self, name, value, strfunc='r'):
         self.name = name
@@ -135,9 +135,14 @@ class Job(object):
         self.sup_group = attr("sup_group", sup_group, 'l')
         self.project = attr("project", project, 'l')
         self.department = attr("department", department, 'l')
-        self.sub_strt_at = attr("sub_strt_at", sub_strt_at, 'd')
-        self.sub_at = attr("sub_at", sub_at, 'd')
-        self.strt_at = attr("strt_at", strt_at, 'd')
+        self.sub_at = attr("submit at", sub_at, 'd')
+        self.strt_at = attr("start at", strt_at, 'd')
+        if sub_strt_at:
+            self.sub_strt_at = attr("submit/start at", sub_strt_at, 'd')
+        elif strt_at:
+            self.sub_strt_at = attr("submit/start at", strt_at, 'd')
+        elif sub_at:
+            self.sub_strt_at = attr("submit/start at", sub_at, 'd')
         self.deadline = attr("deadline", deadline, 'd')
         self.wallclock = attr("wallclock", wallclock)
         self.cpu = attr("cpu", cpu)
