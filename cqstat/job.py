@@ -30,7 +30,7 @@ class JobAttribute(Coloring):
 
         if 'E' in self.value:
             coloring = self._color("red")
-        elif 'w' in self.value or self.value == "Rq":
+        elif 'w' in self.value or 's' in self.value or self.value == "Rq":
             coloring = self._color("yellow")
         elif 'r' in self.value:
             coloring = self._color("green")
