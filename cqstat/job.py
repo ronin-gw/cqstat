@@ -59,6 +59,12 @@ class JobAttribute(Coloring):
         elif strfunc == 'l':
             self.strfunc = self.ljust
             self.value = value
+        elif strfunc == "sl":
+            self.strfunc = self.ljust
+            if Job.name_length < 1:
+                self.value = str(value)
+            else:
+                self.value = str(value)[:Job.name_length]
         elif strfunc == "f5":
             self.strfunc = self.float5
             self.value = float(value)
@@ -80,6 +86,7 @@ class JobAttribute(Coloring):
 
 
 class Job(object):
+    name_length = 10
     attributes = ["id", "prior", "nurg", "nprior", "ntckts",
                   "urg", "rrcontr", "wtcontr", "dlcontr", "ppri",
                   "name", "user", "uid", "group", "gid", "sup_group",
@@ -117,8 +124,8 @@ class Job(object):
         attr = JobAttribute
         self.id = attr("job-ID", job_ID)
         self.prior = attr("prior", prior, "f5")
-        self.name = attr("name", name, 'l')
-        self.user = attr("user", user, 'l')
+        self.name = attr("name", name, 'sl')
+        self.user = attr("user", user, 'sl')
         self.state = attr("state", state, "state")
         self.jclass = attr("jclass", jclass, 'l')
         self.nurg = attr("nurg", nurg, "f5")

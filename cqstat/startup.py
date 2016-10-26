@@ -183,6 +183,9 @@ def parse_args():
     others.add_argument("--split-ss-time",
                         action=Invert, default=settings["split-ss-time"],
                         help="Display submit and start time independently.")
+    others.add_argument("--name-len",
+                        nargs=1, default=settings["name-len"], metavar="length",
+                        help="Max length for jobname and owner (<1 implies no limit)")
     others.add_argument("--bleach",
                         action=Invert, default=settings["bleach"],
                         help="Disable coloring")
@@ -228,7 +231,7 @@ def parse_args():
                      "strt_at", "wallclock", "cpu", "mem", "io", "iow", "loops",
                      "vmem", "max_vmem", "share"])
 
-    setattr(args, "need_jvi", True if args.required_memory else False)
+    setattr(args, "need_jvi", True if args.required_memory or args.split_ss_time else False)
     setattr(args, "full_format", any((args.full, args.full_with_resource,
                                       args.expand, args.resource_req)))
 
@@ -354,6 +357,7 @@ def _load_settings():
         "ftckt": False,
         "stckt": False,
         "share": False,
+        "name-len": 10,
         "red": "red",
         "yellow": "yellow",
         "green": "green",
@@ -414,6 +418,7 @@ def _setup_class(args, settings):
     Queue.physical_memory = args.physical_memory
     Queue.swapped_memory = args.swapped_memory
 
+    Job.name_length = args.name_len
     if args.split_ss_time:
         Job.attributes.remove("sub_strt_at")
     else:
