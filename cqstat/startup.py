@@ -184,7 +184,7 @@ def parse_args():
                         action=Invert, default=settings["split-ss-time"],
                         help="Display submit and start time independently.")
     others.add_argument("--name-len",
-                        nargs=1, default=settings["name-len"], metavar="length",
+                        nargs=1, default=settings["name-len"], type=int, metavar="length",
                         help="Max length for jobname and owner (<1 implies no limit)")
     others.add_argument("--bleach",
                         action=Invert, default=settings["bleach"],
@@ -418,7 +418,7 @@ def _setup_class(args, settings):
     Queue.physical_memory = args.physical_memory
     Queue.swapped_memory = args.swapped_memory
 
-    Job.name_length = args.name_len
+    Job.name_length = args.name_len[0]
     if args.split_ss_time:
         Job.attributes.remove("sub_strt_at")
     else:
