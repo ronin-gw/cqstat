@@ -54,7 +54,12 @@ def add_jvi_info(jobs, joblist=None):
         for k, v in attrs[jid].items():
             if k in Job.attributes:
                 setattr(j, k, v)
-            elif k == "tasks" and task_id in v:
+            elif k == "tasks":
+                print(task_id)
+                if task_id == "NA":
+                    task_id = '1'
+                elif task_id not in v:
+                    continue
                 for uaname, value in v[task_id].items():
                     setattr(j, uaname, value)
             elif k == "jh_resources":
