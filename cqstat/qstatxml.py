@@ -1,4 +1,8 @@
-from xml.etree import ElementTree
+import sys
+if sys.version_info > (3, ):
+    from xml.etree import ElementTree
+else:
+    from xml.etree import cElementTree as ElementTree
 
 TAG2KWARG = dict(
     JB_job_number="job_ID", JAT_prio="prior", JAT_ntix="ntckts", JB_nppri="nprior",

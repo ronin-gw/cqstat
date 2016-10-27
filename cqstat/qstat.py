@@ -61,7 +61,7 @@ def qstat(args):
     if not any((args.cluster_only, args.full, args.full_with_resource, args.expand, args.resource_req, args.job)):
         running_jobs, pending_jobs = get_reduced_info(args.options)
         if args.need_jvi:
-            add_jvi_info(running_jobs + pending_jobs)
+            add_jvi_info(running_jobs + pending_jobs, '*' if "-u *" in args.options else None)
         print_job_status(running_jobs + pending_jobs, visible_only=False)
 
     # clusters, pending_jobs = build_cluster(args.options, args.user_pattern)
