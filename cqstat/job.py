@@ -44,7 +44,7 @@ class JobAttribute(Coloring):
     def datetime(self, l):
         return self.value.strftime("%Y-%m-%d %H:%M:%S").ljust(l)
 
-    def __init__(self, name, value, strfunc='r'):
+    def __init__(self, name, value, strfunc='l'):
         self.name = name
 
         if value is None:
@@ -113,12 +113,12 @@ class Job(object):
         deadline=("deadline", 'd'),
         share=("share", "f2"),
         jobshare=("jobshare", 'i'),
-        ja_task_id=("ja_task_id", 'l')
+        slots=("slots", 'r')
     )
 
     def __setattr__(self, name, value):
         if name in Job.attributes and not isinstance(value, JobAttribute):
-            label, strfunc = Job.DEFAULT_FORMS.get(name, (name, 'r'))
+            label, strfunc = Job.DEFAULT_FORMS.get(name, (name, 'l'))
             self.__dict__[name] = JobAttribute(label, value, strfunc)
         else:
             self.__dict__[name] = value
