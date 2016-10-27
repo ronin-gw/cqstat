@@ -11,7 +11,7 @@ except ImportError:
 
 from startup import parse_args
 from lib import flatten
-from qcommand import get_reduced_info, build_cluster, add_host_info, get_resource_option
+from qcommand import get_reduced_info, add_jvi_info, build_cluster, add_host_info, get_resource_option
 from output import print_job_status, print_cluster_status, print_full_status, print_status
 
 
@@ -60,6 +60,8 @@ def watch_qstat(args):
 def qstat(args):
     if not any((args.cluster_only, args.full, args.full_with_resource, args.expand, args.resource_req, args.job)):
         running_jobs, pending_jobs = get_reduced_info(args.options)
+        if args.need_jvi:
+            add_jvi_info(running_jobs + pending_jobs)
         print_job_status(running_jobs + pending_jobs, visible_only=False)
 
     # clusters, pending_jobs = build_cluster(args.options, args.user_pattern)
