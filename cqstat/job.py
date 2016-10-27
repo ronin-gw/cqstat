@@ -92,13 +92,34 @@ class Job(object):
                   "name", "user", "uid", "group", "gid", "sup_group",
                   "project", "department", "state",
                   "sub_strt_at", "sub_at", "strt_at", "deadline",
-                  "wallclock", "cpu", "mem", "io", "iow", "loops", "vmem", "max_vmem",
+                  "wallclock", "cpu", "mem", "io", "iow", "loops", "vmem", "maxvmem",
                   "tckts", "ovrts", "otckt", "ftckt", "stckt", "share",
                   "queue", "jclass", "slots", "ja_task_id"]
+    DEFAULT_FORMS = dict(
+        id=("job-ID", 'r'),
+        prior=("prior", "f5"),
+        state=("state", "state"),
+        jclass=("jclass", 'l'),
+        nurg=("nurg", "f5"),
+        nprior=("nprior", "f5"),
+        ntckts=("ntckts", "f5"),
+        group=("group", 'l'),
+        sup_group=("sup_group", 'l'),
+        project=("project", 'l'),
+        department=("department", 'l'),
+        sub_at=("submit at", 'd'),
+        strt_at=("start at", 'd'),
+        sub_strt_at=("submit/start at", 'd'),
+        deadline=("deadline", 'd'),
+        share=("share", "f2"),
+        jobshare=("jobshare", 'i'),
+        ja_task_id=("ja_task_id", 'l')
+    )
 
     def __setattr__(self, name, value):
         if name in Job.attributes and not isinstance(value, JobAttribute):
-            self.__dict__[name] = JobAttribute(name, value)
+            label, strfunc = Job.DEFAULT_FORMS.get(name, (name, 'r'))
+            self.__dict__[name] = JobAttribute(label, value, strfunc)
         else:
             self.__dict__[name] = value
 
@@ -110,7 +131,7 @@ class Job(object):
         project=None, department=None,
         sub_strt_at=None, sub_at=None, strt_at=None, deadline=None,
         wallclock=None, cpu=None, mem=None, io=None,
-        iow=None, loops=None, vmem=None, max_vmem=None,
+        iow=None, loops=None, vmem=None, maxvmem=None,
         tckts=None, ovrts=None, otckt=None, ftckt=None, stckt=None,
         share=None, jobshare=None, queue=None, slots=None, ja_task_id=None,
         master_q=None, h_resources=None, master_h_res=None, s_resources=None, binding=None,
@@ -121,77 +142,76 @@ class Job(object):
         submit_cmd=None, exec_host_list=None, granted_req=None, scheduling=None
     ):
         # assign attributes
-        attr = JobAttribute
-        self.id = attr("job-ID", job_ID)
-        self.prior = attr("prior", prior, "f5")
-        self.name = attr("name", name, 'sl')
-        self.user = attr("user", user, 'sl')
-        self.state = attr("state", state, "state")
-        self.jclass = attr("jclass", jclass, 'l')
-        self.nurg = attr("nurg", nurg, "f5")
-        self.nprior = attr("nprior", nprior, "f5")
-        self.ntckts = attr("ntckts", ntckts, "f5")
-        self.urg = attr("urg", urg)
-        self.rrcontr = attr("rrcontr", rrcontr)
-        self.wtcontr = attr("wtcontr", wtcontr)
-        self.dlcontr = attr("dlcontr", dlcontr)
-        self.ppri = attr("ppri", ppri)
-        self.uid = attr("uid", uid)
-        self.group = attr("group", group, 'l')
-        self.gid = attr("gid", gid)
-        self.sup_group = attr("sup_group", sup_group, 'l')
-        self.project = attr("project", project, 'l')
-        self.department = attr("department", department, 'l')
-        self.sub_at = attr("submit at", sub_at, 'd')
-        self.strt_at = attr("start at", strt_at, 'd')
+        self.id = job_ID
+        self.prior = prior
+        self.name = name
+        self.user = user
+        self.state = state
+        self.jclass = jclass
+        self.nurg = nurg
+        self.nprior = nprior
+        self.ntckts = ntckts
+        self.urg = urg
+        self.rrcontr = rrcontr
+        self.wtcontr = wtcontr
+        self.dlcontr = dlcontr
+        self.ppri = ppri
+        self.uid = uid
+        self.group = group
+        self.gid = gid
+        self.sup_group = sup_group
+        self.project = project
+        self.department = department
+        self.sub_at = sub_at
+        self.strt_at = strt_at
         if sub_strt_at:
-            self.sub_strt_at = attr("submit/start at", sub_strt_at, 'd')
+            self.sub_strt_at = sub_strt_at
         elif strt_at:
-            self.sub_strt_at = attr("submit/start at", strt_at, 'd')
+            self.sub_strt_at = strt_at
         elif sub_at:
-            self.sub_strt_at = attr("submit/start at", sub_at, 'd')
-        self.deadline = attr("deadline", deadline, 'd')
-        self.wallclock = attr("wallclock", wallclock)
-        self.cpu = attr("cpu", cpu)
-        self.mem = attr("mem", mem)
-        self.io = attr("io", io)
-        self.iow = attr("iow", iow)
-        self.loops = attr("loops", loops)
-        self.vmem = attr("vmem", vmem)
-        self.max_vmem = attr("max_vmem", max_vmem)
-        self.tckts = attr("tckts", tckts)
-        self.ovrts = attr("ovrts", ovrts)
-        self.otckt = attr("otckt", otckt)
-        self.ftckt = attr("ftckt", ftckt)
-        self.stckt = attr("stckt", stckt)
-        self.share = attr("share", share, "f2")
-        self.jobshare = attr("jobshare", jobshare, 'i')
-        self.queue = attr("queue", queue)
-        self.slots = attr("slots", slots)
-        self.ja_task_id = attr("ja_task_id", ja_task_id, 'l')
-        self.master_q = attr("master_q", master_q)
-        self.h_resources = attr("h_resources", h_resources)
-        self.master_h_res = attr("master_h_res", master_h_res)
-        self.s_resources = attr("s_resources", s_resources)
-        self.binding = attr("binding", binding)
-        self.sge_o_home = attr("sge_o_home", sge_o_home)
-        self.sge_o_log_name = attr("sge_o_log_name", sge_o_log_name)
-        self.sge_o_path = attr("sge_o_path", sge_o_path)
-        self.sge_o_shell = attr("sge_o_shell", sge_o_shell)
-        self.sge_o_workdir = attr("sge_o_workdir", sge_o_workdir)
-        self.sge_o_host = attr("sge_o_host", sge_o_host)
-        self.account = attr("account", account)
-        self.stdout_path_list = attr("stdout_path_list", stdout_path_list)
-        self.stderr_path_list = attr("stderr_path_list", stderr_path_list)
-        self.mail_list = attr("mail_list", mail_list)
-        self.notify = attr("notify", notify)
-        self.restart = attr("restart", restart)
-        self.env_list = attr("env_list", env_list)
-        self.mbind = attr("mbind", mbind)
-        self.submit_cmd = attr("submit_cmd", submit_cmd)
-        self.exec_host_list = attr("exec_host_list", exec_host_list)
-        self.granted_req = attr("granted_req", granted_req)
-        self.scheduling = attr("scheduling", scheduling)
+            self.sub_strt_at = sub_at
+        self.deadline = deadline
+        self.wallclock = wallclock
+        self.cpu = cpu
+        self.mem = mem
+        self.io = io
+        self.iow = iow
+        self.loops = loops
+        self.vmem = vmem
+        self.maxvmem = maxvmem
+        self.tckts = tckts
+        self.ovrts = ovrts
+        self.otckt = otckt
+        self.ftckt = ftckt
+        self.stckt = stckt
+        self.share = share
+        self.jobshare = jobshare
+        self.queue = queue
+        self.slots = slots
+        self.ja_task_id = ja_task_id
+        self.master_q = master_q
+        self.h_resources = h_resources
+        self.master_h_res = master_h_res
+        self.s_resources = s_resources
+        self.binding = binding
+        self.sge_o_home = sge_o_home
+        self.sge_o_log_name = sge_o_log_name
+        self.sge_o_path = sge_o_path
+        self.sge_o_shell = sge_o_shell
+        self.sge_o_workdir = sge_o_workdir
+        self.sge_o_host = sge_o_host
+        self.account = account
+        self.stdout_path_list = stdout_path_list
+        self.stderr_path_list = stderr_path_list
+        self.mail_list = mail_list
+        self.notify = notify
+        self.restart = restart
+        self.env_list = env_list
+        self.mbind = mbind
+        self.submit_cmd = submit_cmd
+        self.exec_host_list = exec_host_list
+        self.granted_req = granted_req
+        self.scheduling = scheduling
 
         # define status
         self.is_visible = False
