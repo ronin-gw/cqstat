@@ -1,10 +1,9 @@
 import subprocess
-from xml.etree import ElementTree
 
 from cluster import Cluster
 from queue import Queue
 from job import Job
-from qstatxml import parse_djob_info
+from qstatxml import parse_job_list, parse_djob_info
 
 TAG2KWARG = dict(
     JB_job_number="job_ID", JAT_prio="prior", JAT_ntix="ntckts", JB_nppri="nprior",
@@ -21,21 +20,13 @@ TAG2KWARG = dict(
 # predecessor_jobs_req, predecessor_jobs, requested_pe, granted_pe, JB_checkpoint_name. hard_request, def_hard_request, soft_request
 
 
-def _parse_jobs(elems):
-    return [
-        Job(**{TAG2KWARG[e.tag]: e.text for e in element if e.tag in TAG2KWARG})
-        for element in elems
-    ]
-
-
 def get_reduced_info(options):
     command = "qstat -xml" + options
 
     output = subprocess.check_output(command.split())
 
-    root = ElementTree.fromstring(output)
-    running_jobs = _parse_jobs(root.findall("queue_info/job_list"))
-    pending_jobs = _parse_jobs(root.findall("job_info/job_list"))
+    running_jobs = [Job(**a) for a in parse_job_list(output, "queue_info/job_list")]
+    pending_jobs = [Job(**a) for a in parse_job_list(output, "job_info/job_list")]
 
     return running_jobs, pending_jobs
 
@@ -179,13 +170,3 @@ def _resource_generator(output, rstr):
             yield jobid, mem
     else:
         yield jobid, mem
-
-
-if __name__ == "__main__":
-    import sys
-    t = ElementTree.parse(sys.argv[1])
-    root = t.getroot()
-    running_jobs = _parse_jobs(root.findall("queue_info/job_list"))
-    pending_jobs = _parse_jobs(root.findall("job_info/job_list"))
-    print(running_jobs)
-    print(pending_jobs)

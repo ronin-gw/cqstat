@@ -22,6 +22,16 @@ VJI2KWARG = dict(
 )
 
 
+def parse_job_list(string, xpath):
+    root = ElementTree.fromstring(string)
+    elems = root.findall(xpath)
+
+    return [
+        {TAG2KWARG[e.tag]: e.text for e in element if e.tag in TAG2KWARG}
+        for element in elems
+    ]
+
+
 def _elems2list(tree, tag, ename="element"):
     if tree is not None:
         return [target.text for target in tree.findall(ename + "/" + tag)]
