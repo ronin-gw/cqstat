@@ -213,7 +213,7 @@ def parse_args():
     additional.add_argument("--iow", action=Invert, default=settings["iow"])
     additional.add_argument("--loops", action=Invert, default=settings["loops"])
     additional.add_argument("--vmem", action=Invert, default=settings["vmem"])
-    additional.add_argument("--max-vmem", action=Invert, default=settings["max-vmem"])
+    additional.add_argument("--maxvmem", action=Invert, default=settings["maxvmem"])
     additional.add_argument("--tckts", action=Invert, default=settings["tckts"])
     additional.add_argument("--ovrts", action=Invert, default=settings["ovrts"])
     additional.add_argument("--otckt", action=Invert, default=settings["otckt"])
@@ -229,11 +229,14 @@ def parse_args():
     PRI_ATTRS = set(["nurg", "nprior", "ntckts", "ppri"])
     JVI_ATTRS = set(["uid", "group", "gid", "sup_group", "department", "sub_at",
                      "strt_at", "wallclock", "cpu", "mem", "io", "iow", "loops",
-                     "vmem", "max_vmem", "share"])
+                     "vmem", "maxvmem", "share"])
 
-    setattr(args, "need_jvi", True if args.required_memory or args.split_ss_time else False)
     setattr(args, "full_format", any((args.full, args.full_with_resource,
                                       args.expand, args.resource_req)))
+    if args.split_ss_time or (args.required_memory and args.full_format):
+        setattr(args, "need_jvi", True)
+    else:
+        setattr(args, "need_jvi", False)
 
     # Setting attributes from specified formats
     enable_attrs = set()
@@ -350,7 +353,7 @@ def _load_settings():
         "iow": False,
         "loops": False,
         "vmem": False,
-        "max-vmem": False,
+        "maxvmem": False,
         "tckts": False,
         "ovrts": False,
         "otckt": False,
