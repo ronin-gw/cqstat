@@ -152,10 +152,10 @@ def parse_args():
     filters.add_argument("-a", "--all-user", action="store_true",
                          help="Display all user jobs (same as -u *)")
     filters.add_argument("-s", "--job-state",
-                         action=ParseJobState, metavar="{a|c|d|o|s|u|A|C|D|E|S}",
+                         action=ParseJobState, metavar="{p|r|s|z|hu|ho|hs|hd|hj|ha|h|a}[+]",
                          help="Filter by job status")
     filters.add_argument("-qs", "--queue-state",
-                         action=ParseQueueState, metavar="{p|r|s|z|hu|ho|hs|hd|hj|ha|h|a}[+]",
+                         action=ParseQueueState, metavar="{a|c|d|o|s|u|A|C|D|E|S}",
                          help="Filter by queue status")
 
     memory = parser.add_argument_group("memory", "Add memory information for each queue")
