@@ -142,7 +142,10 @@ class Job(object):
         iow=("iow", "fsec"),
         ioops=("ioos", 'i'),
         vmem=("vmem", 'b'),
-        maxvmem=("maxvmem", 'b')
+        maxvmem=("maxvmem", 'b'),
+        s_stack=("s_stack", 'b'),
+        s_vmem=("s_vmem", 'b'),
+        mem_req=("mem_req", 'b')
     )
 
     def __setattr__(self, name, value):
@@ -255,4 +258,4 @@ class Job(object):
         if not self.is_visible and visible_only:
             return None
 
-        return tuple([getattr(self, n) for n in Job.attributes])
+        return tuple([getattr(self, n, JobAttribute(n, None)) for n in Job.attributes])

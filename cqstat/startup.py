@@ -191,6 +191,8 @@ def parse_args():
                         help="Disable coloring")
 
     additional = parser.add_argument_group("additiobals", "Add/Remove some attributes individually")
+    additional.add_argument("--job-resource", nargs='+', default=settings["job-resource"],
+                            help="Display job's resource requirements (true implies list all resource)")
     additional.add_argument("--nurg", action=Invert, default=settings["nurg"])
     additional.add_argument("--nprior", action=Invert, default=settings["nprior"])
     additional.add_argument("--ntckts", action=Invert, default=settings["ntckts"])
@@ -354,6 +356,7 @@ def _load_settings():
         "ioops": False,
         "vmem": False,
         "maxvmem": False,
+        "job-resource": [],
         "tckts": False,
         "ovrts": False,
         "otckt": False,
@@ -430,6 +433,8 @@ def _setup_class(args, settings):
     for attr in [k for k, v in vars(args).items() if v is False]:
         if attr in Job.attributes:
             Job.attributes.remove(attr)
+    for attr in args.job_resource:
+        Job.attributes.append(attr)
 
 
 if __name__ == "__main__":
