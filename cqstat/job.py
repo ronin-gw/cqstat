@@ -44,6 +44,27 @@ class JobAttribute(Coloring):
     def datetime(self, l):
         return self.value.strftime("%Y-%m-%d %H:%M:%S").ljust(l)
 
+    def second(self, l):
+        m, s = divmod(self.value, 60)
+        h, m = divmod(m, 60)
+        d, h = divmod(h, 24)
+        return "{:02.0f}:{:02.0f}:{:02.0f}:{:02.0f}".format(d, h, m, s).rjust(l)
+
+    def fsecond(self, l):
+        return "{:7.5f}".format(l).rjust(l)
+
+    def bytes(self, l, suffix=('B ', "KB", "MB", "GB")):
+        v = self.value
+        for s in suffix:
+            if v > 1024:
+                v /= 1024
+            else:
+                break
+        return "{:7.5f} {}".format(v, s).rjust(l)
+
+    def bytesec(self, l):
+        return self.bytes(l, suffix=('Bs ', "KBs", "MBs", "GBs"))
+
     @classmethod
     def sliceljust(cls, v):
         if cls.name_length < 1:
@@ -60,9 +81,13 @@ class JobAttribute(Coloring):
             "sl": (self.ljust, self.sliceljust),
             "f5": (self.float5, float),
             "f2": (self.float2, float),
-            'i': (self.int, int),
+            'i': (self.int, float),
             "state": (self.state, None),
-            'd': (self.datetime, lambda v: datetime.datetime.strptime(v, "%Y-%m-%dT%H:%M:%S.%f"))
+            'd': (self.datetime, lambda v: datetime.datetime.strptime(v, "%Y-%m-%dT%H:%M:%S.%f")),
+            "sec": (self.second, float),
+            "fsec": (self.fsecond, float),
+            'b': (self.bytes, float),
+            "bs": (self.bytes, float)
         }
 
         self.name = name
@@ -88,7 +113,7 @@ class Job(object):
                   "name", "user", "uid", "group", "gid", "sup_group",
                   "project", "department", "state",
                   "sub_strt_at", "sub_at", "strt_at", "deadline",
-                  "wallclock", "cpu", "mem", "io", "iow", "loops", "vmem", "maxvmem",
+                  "wallclock", "cpu", "mem", "io", "iow", "ioops", "vmem", "maxvmem",
                   "tckts", "ovrts", "otckt", "ftckt", "stckt", "share",
                   "queue", "jclass", "slots", "ja_task_id"]
     DEFAULT_FORMS = dict(
@@ -109,7 +134,15 @@ class Job(object):
         deadline=("deadline", 'd'),
         share=("share", "f2"),
         jobshare=("jobshare", 'i'),
-        slots=("slots", 'r')
+        slots=("slots", 'r'),
+        wallclock=("wallclock", "sec"),
+        cpu=("cpu", "sec"),
+        mem=("mem", "bs"),
+        io=("io", "b"),
+        iow=("iow", "fsec"),
+        ioops=("ioos", 'i'),
+        vmem=("vmem", 'b'),
+        maxvmem=("maxvmem", 'b')
     )
 
     def __setattr__(self, name, value):
@@ -127,7 +160,7 @@ class Job(object):
         project=None, department=None,
         sub_strt_at=None, sub_at=None, strt_at=None, deadline=None,
         wallclock=None, cpu=None, mem=None, io=None,
-        iow=None, loops=None, vmem=None, maxvmem=None,
+        iow=None, ioops=None, vmem=None, maxvmem=None,
         tckts=None, ovrts=None, otckt=None, ftckt=None, stckt=None,
         share=None, jobshare=None, queue=None, slots=None, ja_task_id=None,
         master_q=None, h_resources=None, master_h_res=None, s_resources=None, binding=None,
@@ -172,7 +205,7 @@ class Job(object):
         self.mem = mem
         self.io = io
         self.iow = iow
-        self.loops = loops
+        self.ioops = ioops
         self.vmem = vmem
         self.maxvmem = maxvmem
         self.tckts = tckts

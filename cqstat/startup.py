@@ -211,7 +211,7 @@ def parse_args():
     additional.add_argument("--mem", action=Invert, default=settings["mem"])
     additional.add_argument("--io", action=Invert, default=settings["io"])
     additional.add_argument("--iow", action=Invert, default=settings["iow"])
-    additional.add_argument("--loops", action=Invert, default=settings["loops"])
+    additional.add_argument("--ioops", action=Invert, default=settings["ioops"])
     additional.add_argument("--vmem", action=Invert, default=settings["vmem"])
     additional.add_argument("--maxvmem", action=Invert, default=settings["maxvmem"])
     additional.add_argument("--tckts", action=Invert, default=settings["tckts"])
@@ -228,7 +228,7 @@ def parse_args():
     URG_ATTRS = set(["nurg", "urg", "rrcontr", "wtcontr", "dlcontr", "deadline"])
     PRI_ATTRS = set(["nurg", "nprior", "ntckts", "ppri"])
     JVI_ATTRS = set(["uid", "group", "gid", "sup_group", "department", "sub_at",
-                     "strt_at", "wallclock", "cpu", "mem", "io", "iow", "loops",
+                     "strt_at", "wallclock", "cpu", "mem", "io", "iow", "ioops",
                      "vmem", "maxvmem", "share"])
 
     setattr(args, "full_format", any((args.full, args.full_with_resource,
@@ -351,7 +351,7 @@ def _load_settings():
         "mem": False,
         "io": False,
         "iow": False,
-        "loops": False,
+        "ioops": False,
         "vmem": False,
         "maxvmem": False,
         "tckts": False,
