@@ -42,7 +42,7 @@ class JobAttribute(Coloring):
         return coloring(self.value.center(l))
 
     def datetime(self, l):
-        return self.value.strftime("%Y-%m-%d %H:%M:%S ").ljust(l)
+        return self.value.strftime("%Y-%m-%d %H:%M:%S").ljust(l)
 
     def __init__(self, name, value, strfunc='r'):
         self.name = name

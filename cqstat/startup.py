@@ -184,7 +184,7 @@ def parse_args():
                         action=Invert, default=settings["split-ss-time"],
                         help="Display submit and start time independently.")
     others.add_argument("--name-len",
-                        nargs=1, default=settings["name-len"], type=int, metavar="length",
+                        nargs=1, default=[settings["name-len"]], type=int, metavar="int",
                         help="Max length for jobname and owner (<1 implies no limit)")
     others.add_argument("--bleach",
                         action=Invert, default=settings["bleach"],

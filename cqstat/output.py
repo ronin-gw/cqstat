@@ -4,6 +4,9 @@ from cluster import Cluster
 from job import Job
 
 
+SEPARATOR = "  "
+
+
 def _get_width(table, strip_len):
     len_table = [map(len, v) for v in table]
     if strip_len:
@@ -62,10 +65,10 @@ def print_job_status(jobs, visible_only=True):
 
     if job_status:
         header, job_status, attr_lens = _justify_string_with_header(job_status)
-        print(' '.join(header))
-        print('-' * (sum(attr_lens) + len(header) - 1))
+        print(SEPARATOR.join(header))
+        print('-' * (sum(attr_lens) + len(header)*len(SEPARATOR) - 1))
         for j in job_status:
-            print(' '.join(j))
+            print(SEPARATOR.join(j))
 
 
 def print_status(clusters, pending_jobs):
