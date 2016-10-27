@@ -44,42 +44,38 @@ class JobAttribute(Coloring):
     def datetime(self, l):
         return self.value.strftime("%Y-%m-%d %H:%M:%S").ljust(l)
 
+    @classmethod
+    def sliceljust(cls, v):
+        if cls.name_length < 1:
+            return str(v)
+        else:
+            return str(v)[:cls.name_length]
+
     def __init__(self, name, value, strfunc='l'):
+        # shortcut: (stringify function, store func)
+        STRFUNC_PRESETS = {
+            'r': (self.rjust, None),
+            'c': (self.center, None),
+            'l': (self.ljust, None),
+            "sl": (self.ljust, self.sliceljust),
+            "f5": (self.float5, float),
+            "f2": (self.float2, float),
+            'i': (self.int, int),
+            "state": (self.state, None),
+            'd': (self.datetime, lambda v: datetime.datetime.strptime(v, "%Y-%m-%dT%H:%M:%S.%f"))
+        }
+
         self.name = name
 
         if value is None:
             self.strfunc = lambda l: ' '*l
             self.value = "NA"
-        elif strfunc == 'r':
-            self.strfunc = self.rjust
-            self.value = value
-        elif strfunc == 'c':
-            self.strfunc = self.center
-            self.value = value
-        elif strfunc == 'l':
-            self.strfunc = self.ljust
-            self.value = value
-        elif strfunc == "sl":
-            self.strfunc = self.ljust
-            if Job.name_length < 1:
-                self.value = str(value)
-            else:
-                self.value = str(value)[:Job.name_length]
-        elif strfunc == "f5":
-            self.strfunc = self.float5
-            self.value = float(value)
-        elif strfunc == "f2":
-            self.strfunc = self.float2
-            self.value = float(value)
-        elif strfunc == 'i':
-            self.strfunc = self.int
-            self.value = int(value)
-        elif strfunc == "state":
-            self.strfunc = self.state
-            self.value = value
-        elif strfunc == 'd':
-            self.strfunc = self.datetime
-            self.value = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+        elif strfunc in STRFUNC_PRESETS:
+            strfunc, valfunc = STRFUNC_PRESETS[strfunc]
+            if valfunc is None:
+                valfunc = lambda a: a
+            self.strfunc = strfunc
+            self.value = valfunc(value)
         else:
             self.strfunc = strfunc
             self.value = value
