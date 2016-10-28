@@ -418,7 +418,8 @@ def _setup_class(args, settings):
     Coloring.enable = not args.bleach
     Coloring.COLOR = {k: v for k, v in settings.items() if k in ("red", "yellow", "green", "blue", "black")}
 
-    Cluster.args = args
+    if args.extra:
+        Cluster.enable_ext()
 
     Queue.required_memory = args.required_memory
     Queue.physical_memory = args.physical_memory

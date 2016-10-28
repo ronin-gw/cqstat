@@ -3,7 +3,7 @@ import subprocess
 from cluster import Cluster
 from queue import Queue
 from job import Job
-from qstatxml import parse_job_list, parse_djob_info
+from qstatxml import parse_job_list, parse_djob_info, parse_cluster_summary
 
 TAG2KWARG = dict(
     JB_job_number="job_ID", JAT_prio="prior", JAT_ntix="ntckts", JB_nppri="nprior",
@@ -66,11 +66,26 @@ def add_jvi_info(jobs, joblist=None):
                     setattr(j, rname, fvalue)
 
 
+def get_cluster_info(options=None):
+    command = "qstat -xml -g c " + (options if options else '')
+    output = subprocess.check_output(command.split())
+
+    return parse_cluster_summary(output)
+
+
+def get_cluster(options):
+    return [Cluster(**a) for a in get_cluster_info(options)]
+
+
 def build_cluster(options, users):
+    # command = "qstat -xml -g c" + options
+    # output = subprocess.check_output(command.split())
+    # clusters = {kwargs["name"]: Cluster(**kwargs) for kwargs in parse_cluster_summary(output)}
+
     command = "qstat -g c" + options
+    output = subprocess.check_output(command.split())
 
     clusters = {}
-    output = subprocess.check_output(command.split())
 
     for info in map(lambda l: l.split(), output.split('\n')[2:]):
         if not info:

@@ -25,14 +25,20 @@ VJI2KWARG = dict(
     JB_jobshare="jobshare"
 )
 
+CQS2KWAGS = dict(
+    name="name", load="load", used="used", resv="resv", available="avail",
+    total="total", temp_disabled="tempd", manual_intervention="mintr",
+    suspend_manual="susm", suspend_threshold="susth", suspend_on_subordinate="sussub",
+    suspend_calendar="suscal", unknown="unknown", load_alarm="alarm",
+    disabled_manual="mand", disabled_calendar="cald", ambiguous="ambig",
+    orphaned="orphan", error="error"
+)
+
 
 def parse_job_list(string, xpath):
-    root = ElementTree.fromstring(string)
-    elems = root.findall(xpath)
-
     return [
         {TAG2KWARG[e.tag]: e.text for e in element if e.tag in TAG2KWARG}
-        for element in elems
+        for element in ElementTree.fromstring(string).findall(xpath)
     ]
 
 
@@ -69,6 +75,13 @@ def parse_djob_info(string):
         jobs[attrs["job_ID"]] = attrs
 
     return jobs
+
+
+def parse_cluster_summary(string):
+    return [
+        {CQS2KWAGS[e.tag]: e.text for e in queue if e.tag in CQS2KWAGS}
+        for queue in ElementTree.fromstring(string).findall("cluster_queue_summary")
+    ]
 
 
 if __name__ == "__main__":

@@ -108,6 +108,8 @@ class JobAttribute(Coloring):
 
 class Job(object):
     name_length = 10
+
+    # Output rows
     attributes = ["id", "prior", "nurg", "nprior", "ntckts",
                   "urg", "rrcontr", "wtcontr", "dlcontr", "ppri",
                   "name", "user", "uid", "group", "gid", "sup_group",

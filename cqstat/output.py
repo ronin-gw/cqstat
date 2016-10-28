@@ -35,29 +35,49 @@ def _justify_string_with_header(table, strip_len=None):
     return header, table, max_len
 
 
+def _justify_string_with_multiheader(table, strip_len=None):
+    headers = list(zip(*map(lambda a: a.name.split('\n'), table[0])))
+    striptable = [map(lambda a: a.strfunc(0), v) for v in table]
+
+    max_len = _get_width(headers + striptable, strip_len)
+    headers = [[a.ljust(i) for a, i in zip(h, max_len)] for h in headers]
+    table = [[a.strfunc(i) for a, i in zip(v, max_len)] for v in table]
+
+    return headers, table, max_len
+
+
 def _get_job_status(jobs, visible_only=True):
     return [status for status in map(lambda j: j.get_attributes(visible_only), jobs) if status]
 
 
 def print_cluster_status(clusters):
-    for attr in ("name", "used", "resv", "tot", "memtot", "rsvmem", "memuse", "swapus", "swapto"):
-        setattr(Cluster, attr+"_len", max(len(str(getattr(c, attr, ''))) for c in clusters))
+    cluster_status = [status for status in map(lambda c: c.get_attributes(), clusters)]
 
-    name_len, slot_len, mem_len = clusters[0].get_infolen()
+    headers, cluster_status, attr_lens = _justify_string_with_multiheader(cluster_status)
+    for h in headers:
+        print(SEPARATOR.join(h))
+    print('-' * (sum(attr_lens) + len(headers[0])*len(SEPARATOR) - 1))
+    for c in cluster_status:
+        print(SEPARATOR.join(c))
 
-    memhed = (("mem/" if Cluster.physical_memory else '') +
-              ("req/" if Cluster.required_memory else '') +
-              ("tot mem" if Cluster.required_memory or Cluster.physical_memory else '') +
-              ("  use/tot swap" if Cluster.swapped_memory else ''))
-
-    header = "{}  {}  {}".format("queuename".ljust(name_len),
-                                 "resv/used/tot (%)".center(slot_len),
-                                 memhed.center(mem_len))
-
-    print(header)
-    print('-' * len(header))
-    for c in clusters:
-        c.print_status()
+    # for attr in ("name", "used", "resv", "tot", "memtot", "rsvmem", "memuse", "swapus", "swapto"):
+    #     setattr(Cluster, attr+"_len", max(len(str(getattr(c, attr, ''))) for c in clusters))
+    #
+    # name_len, slot_len, mem_len = clusters[0].get_infolen()
+    #
+    # memhed = (("mem/" if Cluster.physical_memory else '') +
+    #           ("req/" if Cluster.required_memory else '') +
+    #           ("tot mem" if Cluster.required_memory or Cluster.physical_memory else '') +
+    #           ("  use/tot swap" if Cluster.swapped_memory else ''))
+    #
+    # header = "{}  {}  {}".format("queuename".ljust(name_len),
+    #                              "resv/used/tot (%)".center(slot_len),
+    #                              memhed.center(mem_len))
+    #
+    # print(header)
+    # print('-' * len(header))
+    # for c in clusters:
+    #     c.print_status()
 
 
 def print_job_status(jobs, visible_only=True):
