@@ -1,20 +1,9 @@
 from __future__ import print_function
-from lib import calc_suffix, Coloring
+from lib import calc_suffix
+from template import Coloring, StatAttribute
 
 
-class QueueAttribute(object):
-    def rjust(self, l):
-        return str(self.value).rjust(l)
-
-    def ljust(self, l):
-        return str(self.value).ljust(l)
-
-    def float2(self, l):
-        return '{:.2f}'.format(self.value).rjust(l)
-
-    def int(self, l):
-        return str(int(self.value)).rjust(l)
-
+class QueueAttribute(StatAttribute):
     def bytes(self, l, suffix=('', 'K', 'M', 'G', 'T')):
         v = self.value
         for s in suffix[:-1]:
@@ -25,31 +14,6 @@ class QueueAttribute(object):
         else:
             s = suffix[-1]
         return "{:3.1f}{}".format(v, s).rjust(l)
-
-    def __init__(self, name, value, strfunc='l'):
-        # shortcut: (stringify function, store func)
-        STRFUNC_PRESETS = {
-            'r': (self.rjust, None),
-            'l': (self.ljust, None),
-            "f2": (self.float2, float),
-            'i': (self.int, float),
-            'b': (self.bytes, float)
-        }
-
-        self.name = name
-
-        if value is None:
-            self.strfunc = lambda l: ' '*l
-            self.value = "NA"
-        elif strfunc in STRFUNC_PRESETS:
-            strfunc, valfunc = STRFUNC_PRESETS[strfunc]
-            if valfunc is None:
-                valfunc = lambda a: a
-            self.strfunc = strfunc
-            self.value = valfunc(value)
-        else:
-            self.strfunc = strfunc
-            self.value = value
 
 
 class Queue(Coloring):

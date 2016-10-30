@@ -1,20 +1,8 @@
 from __future__ import print_function
-from lib import Coloring
+from template import Coloring, StatAttribute
 
 
-class ClusterAttribute(object):
-    def rjust(self, l):
-        return str(self.value).rjust(l)
-
-    def ljust(self, l):
-        return str(self.value).ljust(l)
-
-    def float2(self, l):
-        return '{:.2f}'.format(self.value).rjust(l)
-
-    def int(self, l):
-        return str(int(self.value)).rjust(l)
-
+class ClusterAttribute(StatAttribute):
     def bytes(self, l, suffix=('', 'K', 'M', 'G', 'T')):
         v = self.value
         for s in suffix[:-1]:
@@ -25,31 +13,6 @@ class ClusterAttribute(object):
         else:
             s = suffix[-1]
         return "{:3.1f}{}".format(v, s).rjust(l)
-
-    def __init__(self, name, value, strfunc='l'):
-        # shortcut: (stringify function, store func)
-        STRFUNC_PRESETS = {
-            'r': (self.rjust, None),
-            'l': (self.ljust, None),
-            "f2": (self.float2, float),
-            'i': (self.int, float),
-            'b': (self.bytes, float)
-        }
-
-        self.name = name
-
-        if value is None:
-            self.strfunc = lambda l: ' '*l
-            self.value = "NA"
-        elif strfunc in STRFUNC_PRESETS:
-            strfunc, valfunc = STRFUNC_PRESETS[strfunc]
-            if valfunc is None:
-                valfunc = lambda a: a
-            self.strfunc = strfunc
-            self.value = valfunc(value)
-        else:
-            self.strfunc = strfunc
-            self.value = value
 
 
 class Cluster(Coloring):
@@ -192,9 +155,21 @@ class Cluster(Coloring):
         return tuple([getattr(self, n, ClusterAttribute(n, None)) for n in Cluster.attributes])
 
     def get_simple_status(self):
-        return (self.name.strfunc(1),
-                "{}/{}/{}".format(self.resv.strfunc(1), self.used.strfunc(1), self.running.strfunc(1)),
-                "({:3.0f}%)".format(100. * (self.resv.value + self.used.value) / self.running.value))
+        status = [self.name.strfunc(1),
+                  "{}/{}/{}".format(self.resv.strfunc(1), self.used.strfunc(1), self.running.strfunc(1)),
+                  "({:3.0f}%)".format(100. * (self.resv.value + self.used.value) / self.running.value)]
+
+        if Cluster.physical_memory and Cluster.required_memory:
+            status.append("{}/{}/{}".format(self.memuse.strfunc(1), self.rsvmem.strfunc(1), self.memtot.strfunc(1)))
+        elif Cluster.physical_memory:
+            status.append("{}/{}".format(self.memuse.strfunc(1), self.memtot.strfunc(1)))
+        elif Cluster.required_memory:
+            status.append("{}/{}".format(self.memreq.strfunc(1), self.memtot.strfunc(1)))
+
+        if Cluster.swapped_memory:
+            status.append("{}/{}".format(self.swapus.strfunc(1), self.swapto.strfunc(1)))
+
+        return status
 
     def summation_reqmem(self, attr):
         reserved_memory = 0
