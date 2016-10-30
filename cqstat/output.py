@@ -76,8 +76,6 @@ def print_job_status(jobs, visible_only=True):
 
 
 def print_full_status(clusters, pending_jobs, sort, full):
-    Job.attributes.remove("queue")
-
     for cluster in clusters:
         if full or cluster.has_visible_job():
             print(*cluster.get_simple_status(), sep=SEPARATOR)

@@ -11,9 +11,9 @@ from output import print_job_status, print_cluster_status, print_full_status
 
 if sys.version_info > (3, ):
     from functools import reduce
-    from io import StringIO as cStringIO
+    from io import StringIO
 else:
-    import cStringIO
+    from cStringIO import StringIO
 
 
 def main():
@@ -43,7 +43,7 @@ def watch_qstat(args):
         header += cmdline + ' '*(width - len(header) - 19 - len(cmdline))
 
     # prevent display flickering due to qstat() time lag
-    with contextlib.closing(cStringIO.StringIO()) as strio:
+    with contextlib.closing(StringIO()) as strio:
         sys.stdout = strio
 
         while True:
@@ -62,7 +62,7 @@ def qstat(args):
     if args.job:
         pass
 
-    elif not any((args.cluster_only, args.full, args.full_with_resource, args.expand, args.resource_req)):
+    elif not args.full_format:
         running_jobs, pending_jobs = get_reduced_info(args.options)
         if args.need_jvi:
             add_jvi_info(running_jobs + pending_jobs, '*' if "-u *" in args.options else None)

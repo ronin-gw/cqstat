@@ -448,6 +448,8 @@ def _setup_class(args, settings):
     Queue.update_attrs()
 
     JobAttribute.name_length = args.name_len[0]
+    if args.full_format:
+        Job.attributes.remove("queue")
     if args.split_ss_time:
         Job.attributes.remove("sub_strt_at")
     else:
