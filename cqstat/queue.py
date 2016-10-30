@@ -1,6 +1,6 @@
 from __future__ import print_function
 from template import StateManager
-from lib import calc_suffix, add_suffix
+from lib import calc_suffix
 
 
 class QueueAttribute(object):
@@ -16,13 +16,23 @@ class QueueAttribute(object):
     def int(self, l):
         return str(int(self.value)).rjust(l)
 
+    def bytes(self, l, suffix=('', "K", "M", "G")):
+        v = self.value
+        for s in suffix:
+            if v > 1024:
+                v /= 1024
+            else:
+                break
+        return "{:3.1f}{}".format(v, s).rjust(l)
+
     def __init__(self, name, value, strfunc='l'):
         # shortcut: (stringify function, store func)
         STRFUNC_PRESETS = {
             'r': (self.rjust, None),
             'l': (self.ljust, None),
             "f2": (self.float2, float),
-            'i': (self.int, float)
+            'i': (self.int, float),
+            'b': (self.bytes, float)
         }
 
         self.name = name
@@ -67,7 +77,13 @@ class Queue(StateManager):
 
     DEFAULT_FORMS = dict(
         qtype=("qtype", 'r'),
-        np_load=("np_load", "f2")
+        np_load=("np_load", "f2"),
+
+        memuse=("memuse", 'b'),
+        rsvmem=("rsvmem", 'b'),
+        memtot=("memtot", 'b'),
+        swapus=("swapus", 'b'),
+        swapto=("swapto", 'b')
     )
 
     def __setattr__(self, name, value):
@@ -130,13 +146,13 @@ class Queue(StateManager):
         self.ncor = int(ncor)
         self.nthr = int(nthr)
         self.load = '0' if load == '-' else load
-        self.memtot = QueueAttribute("memtot", memtot, 'r')
-        self.memuse = QueueAttribute("memuse", '0' if memuse == '-' else memuse, 'r')
-        self.swapto = QueueAttribute("swapto", swapto, 'r')
-        self.swapus = QueueAttribute("swapus", '0' if swapus == '-' else swapus, 'r')
+        self.memtot = calc_suffix(memtot)
+        self.memuse = 0. if memuse == '-' else calc_suffix(memuse)
+        self.swapto = calc_suffix(swapto), 'b'
+        self.swapus = 0. if swapus == '-' else calc_suffix(swapus)
 
-        self.memusage = calc_suffix(self.memuse.value) / calc_suffix(self.memtot.value)
-        self.swapusage = calc_suffix(self.swapus.value) / calc_suffix(self.swapto.value)
+        self.memusage = self.memuse.value / self.memtot.value
+        self.swapusage = self.swapus.value / self.swapto.value
 
     def get_rut_len(self):
         return (len(self.resv.strfunc(0)), len(self.used.strfunc(0)), len(self.total.strfunc(0)))
@@ -175,10 +191,13 @@ class Queue(StateManager):
     def set_swap_attrs(self, us_len, to_len):
         self.swap = "{}/{}".format(self.swapus.strfunc(us_len), self.swapto.strfunc(to_len))
 
-    def _get_reserved_memory(self):
-        self.reserved_memory = sum(c.reserved_memory for c in self.children)
-        self.rsvmemusage = 0. if calc_suffix(self.memtot.value) == 0 else self.reserved_memory / calc_suffix(self.memtot.value)
-        self.rsvmem = QueueAttribute("rsvmem", add_suffix(self.reserved_memory), 'r')
+    def summation_reqmem(self, attr):
+        reserved_memory = 0
+        for child in self.children:
+            child.summation_reqmem(attr)
+            reserved_memory += child.reserved_memory
+        self.rsvmemusage = 0. if self.memtot.value == 0 else reserved_memory / self.memtot.value
+        self.rsvmem = reserved_memory
 
     def get_attributes(self):
         return tuple([getattr(self, n, QueueAttribute(n, None)) for n in Queue.attributes])

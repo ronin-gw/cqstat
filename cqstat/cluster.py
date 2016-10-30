@@ -1,6 +1,5 @@
 from __future__ import print_function
-from template import Coloring, StateManager
-from lib import flatten, calc_suffix, add_suffix
+from template import StateManager
 
 
 class ClusterAttribute(object):
@@ -16,13 +15,23 @@ class ClusterAttribute(object):
     def int(self, l):
         return str(int(self.value)).rjust(l)
 
+    def bytes(self, l, suffix=('', "K", "M", "G")):
+        v = self.value
+        for s in suffix:
+            if v > 1024:
+                v /= 1024
+            else:
+                break
+        return "{:3.1f}{}".format(v, s).rjust(l)
+
     def __init__(self, name, value, strfunc='l'):
         # shortcut: (stringify function, store func)
         STRFUNC_PRESETS = {
             'r': (self.rjust, None),
             'l': (self.ljust, None),
             "f2": (self.float2, float),
-            'i': (self.int, float)
+            'i': (self.int, float),
+            'b': (self.bytes, float)
         }
 
         self.name = name
@@ -85,11 +94,11 @@ class Cluster(StateManager):
         orphan=("\norphaned", 'i'),
         error=("\nerror", 'i'),
 
-        memuse=("memory\nusage", 'r'),
-        rsvmem=("memory\nreserved", 'r'),
-        memtot=("memory\ntotal", 'r'),
-        swapus=("swap\nuseage", 'r'),
-        swapto=("swap\ntotal", 'r')
+        memuse=("memory\nusage", 'b'),
+        rsvmem=("memory\nreserved", 'b'),
+        memtot=("memory\ntotal", 'b'),
+        swapus=("swap\nuseage", 'b'),
+        swapto=("swap\ntotal", 'b')
     )
 
     def __setattr__(self, name, value):
@@ -152,18 +161,18 @@ class Cluster(StateManager):
         return reduce(lambda a, b: a+b, map(lambda q: q.jobs, self.queues))
 
     def set_host_info(self):
-        memtot = sum(calc_suffix(q.memtot.value) for q in self.queues if q.disabled is False)
-        memuse = sum(calc_suffix(q.memuse.value) for q in self.queues if q.disabled is False)
-        swapto = sum(calc_suffix(q.swapto.value) for q in self.queues if q.disabled is False)
-        swapus = sum(calc_suffix(q.swapus.value) for q in self.queues if q.disabled is False)
+        memtot = sum(q.memtot.value for q in self.queues if q.disabled is False)
+        memuse = sum(q.memuse.value for q in self.queues if q.disabled is False)
+        swapto = sum(q.swapto.value for q in self.queues if q.disabled is False)
+        swapus = sum(q.swapus.value for q in self.queues if q.disabled is False)
 
         self.memusage = 0. if memtot == 0 else memuse / memtot
         self.swapusage = 0. if swapto == 0 else swapus / swapto
 
-        self.memtot = add_suffix(memtot)
-        self.memuse = add_suffix(memuse)
-        self.swapto = add_suffix(swapto)
-        self.swapus = add_suffix(swapus)
+        self.memtot = memtot
+        self.memuse = memuse
+        self.swapto = swapto
+        self.swapus = swapus
 
     def get_attributes(self):
         return tuple([getattr(self, n, ClusterAttribute(n, None)) for n in Cluster.attributes])
@@ -173,7 +182,10 @@ class Cluster(StateManager):
                 "{}/{}/{}".format(self.resv.strfunc(1), self.used.strfunc(1), self.running.strfunc(1)),
                 "({:3.0f}%)".format(100. * (self.resv.value + self.used.value) / self.running.value))
 
-    def _get_reserved_memory(self):
-        self.reserved_memory = sum(c.reserved_memory for c in self.children)
-        self.rsvmemusage = 0. if calc_suffix(self.memtot.value) == 0 else self.reserved_memory / calc_suffix(self.memtot.value)
-        self.rsvmem = add_suffix(self.reserved_memory)
+    def summation_reqmem(self, attr):
+        reserved_memory = 0
+        for child in self.children:
+            child.summation_reqmem(attr)
+            reserved_memory += child.reserved_memory
+        self.rsvmemusage = 0. if self.memtot.value == 0 else reserved_memory / self.memtot.value
+        self.rsvmem = reserved_memory

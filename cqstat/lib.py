@@ -12,14 +12,6 @@ def calc_suffix(num):
         return float(num[:-1]) * suf[num[-1].upper()]
 
 
-def add_suffix(num):
-    for suf, vol in (('K', 1024), ('M', 1048576), ('G', 1073741824), ('T', 1099511627776)):
-        if vol <= num < vol*1024:
-            return "{:.1f}{}".format(num/vol, suf)
-
-    return "{:.1f}".format(num)
-
-
 def generate_pattern(names):
     patterns = []
     for name in names:

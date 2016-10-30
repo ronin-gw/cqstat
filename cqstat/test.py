@@ -81,7 +81,7 @@ def print_detail(args, settings):
 
     print("preview:")
     print()
-    print_status([c, c2], pj)
+    # print_status([c, c2], pj)
     print()
     print()
     print("full format preview (-e/-f):")
