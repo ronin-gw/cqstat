@@ -104,16 +104,10 @@ class Cluster(Coloring):
         ambig=("\nambiguous", 'i'),
         orphan=("\norphaned", 'i'),
         error=("\nerror", 'i'),
-
-        memuse=("memory\nusage", 'b'),
-        rsvmem=("memory\nreserved", 'b'),
-        memtot=("memory\ntotal", 'b'),
-        swapus=("swap\nuseage", 'b'),
-        swapto=("swap\ntotal", 'b')
     )
 
     def __setattr__(self, name, value):
-        if name in Cluster.attributes and not isinstance(value, ClusterAttribute):
+        if name in self.attributes and not isinstance(value, ClusterAttribute):
             label, strfunc = Cluster.DEFAULT_FORMS.get(name, (name, 'l'))
             self.__dict__[name] = ClusterAttribute(label, value, strfunc)
         else:
@@ -179,10 +173,10 @@ class Cluster(Coloring):
         swapto = sum(q.swapto.value for q in self.queues if q.disabled is False)
         swapus = sum(q.swapus.value for q in self.queues if q.disabled is False)
 
-        self.memtot = memtot
-        self.memuse = memuse
-        self.swapto = swapto
-        self.swapus = swapus
+        self.memtot = ClusterAttribute("memory\ntotal", memtot, 'b')
+        self.memuse = ClusterAttribute("memory\nusage", memuse, 'b')
+        self.swapto = ClusterAttribute("swap\ntotal", swapto, 'b')
+        self.swapus = ClusterAttribute("swap\nusage", swapus, 'b')
 
         self.memusage = 0. if memtot == 0 else memuse / memtot
         self.swapusage = 0. if swapto == 0 else swapus / swapto
@@ -209,7 +203,7 @@ class Cluster(Coloring):
             reserved_memory += queue.rsvmem.value
         self.rsvmemusage = 0. if self.memtot.value == 0 else reserved_memory / self.memtot.value
 
-        self.rsvmem = reserved_memory
+        self.rsvmem = ClusterAttribute("reserved\nmemory", reserved_memory, 'b')
 
         rsv_color = self._get_coloring(self.rsvmemusage, (0.5, 0.8), (None, "yellow", "red"))
         self.memtot.strfunc = self.get_colstrfunc(self.memtot, rsv_color)

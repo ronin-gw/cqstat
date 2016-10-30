@@ -85,12 +85,6 @@ class Queue(Coloring):
     DEFAULT_FORMS = dict(
         qtype=("qtype", 'r'),
         np_load=("np_load", "f2"),
-
-        memuse=("memuse", 'b'),
-        rsvmem=("rsvmem", 'b'),
-        memtot=("memtot", 'b'),
-        swapus=("swapus", 'b'),
-        swapto=("swapto", 'b')
     )
 
     def __setattr__(self, name, value):
