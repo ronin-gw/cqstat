@@ -15,13 +15,15 @@ class QueueAttribute(object):
     def int(self, l):
         return str(int(self.value)).rjust(l)
 
-    def bytes(self, l, suffix=('', "K", "M", "G")):
+    def bytes(self, l, suffix=('', 'K', 'M', 'G', 'T')):
         v = self.value
-        for s in suffix:
+        for s in suffix[:-1]:
             if v > 1024:
                 v /= 1024
             else:
                 break
+        else:
+            s = suffix[-1]
         return "{:3.1f}{}".format(v, s).rjust(l)
 
     def __init__(self, name, value, strfunc='l'):
@@ -72,6 +74,12 @@ class Queue(Coloring):
         def _f(l):
             return basefunc(l) if l < 1 else coloring(basefunc(l))
 
+        return _f
+
+    @staticmethod
+    def get_static_strfunc(forlen, forstr):
+        def _f(l):
+            return forlen if l < 1 else forstr
         return _f
 
     DEFAULT_FORMS = dict(
@@ -178,21 +186,42 @@ class Queue(Coloring):
         }
 
     def set_memory_attrs(self, tot_len, use_len=None, rsv_len=None):
+        if use_len:
+            use_color = self._get_coloring(self.memusage, (0.5, 0.8), (None, "yellow", "red"))
+            tot_color = use_color
+        if rsv_len:
+            rsv_color = self._get_coloring(self.rsvmemusage, (0.5, 0.8), (None, "yellow", "red"))
+            tot_color = rsv_color
+
         if use_len and rsv_len:
             self.mem = "{}/{}/{}".format(self.memuse.strfunc(use_len),
                                          self.rsvmem.strfunc(rsv_len),
                                          self.memtot.strfunc(tot_len))
+            colored = "{}/{}/{}".format(use_color(self.memuse.strfunc(use_len)),
+                                        rsv_color(self.rsvmem.strfunc(rsv_len)),
+                                        tot_color(self.memtot.strfunc(tot_len)))
         else:
             self.mem = "{}/{}".format(
-                self.memuse.strfunc(use_len),
-                self.rsvmem.strfunc(rsv_len) if rsv_len else self.memtot.strfunc(tot_len)
+                self.rsvmem.strfunc(rsv_len) if rsv_len else self.memuse.strfunc(use_len),
+                self.memtot.strfunc(tot_len)
             )
+            colored = "{}/{}".format(
+                rsv_color(self.rsvmem.strfunc(rsv_len)) if rsv_len else use_color(self.memuse.strfunc(use_len)),
+                tot_color(self.memtot.strfunc(tot_len))
+            )
+
+        self.mem.strfunc = self.get_static_strfunc(self.mem.value, colored)
 
     def get_swap_len(self):
         return [len(self.swapus.strfunc(0)), len(self.swapto.strfunc(0))] if Queue.swapped_memory else []
 
     def set_swap_attrs(self, us_len, to_len):
-        self.swap = "{}/{}".format(self.swapus.strfunc(us_len), self.swapto.strfunc(to_len))
+        swap_color = self._get_coloring(self.swapusage, (0.5, 0.8), (None, "yellow", "red"))
+        self.swap = "{}/{}".format(self.swapus.strfunc(us_len),
+                                   self.swapto.strfunc(to_len))
+        colored = "{}/{}".format(swap_color(self.swapus.strfunc(us_len)),
+                                 swap_color(self.swapto.strfunc(to_len)))
+        self.swap.strfunc = self.get_static_strfunc(self.swap.value, colored)
 
     def summation_reqmem(self, attr):
         reserved_memory = 0
