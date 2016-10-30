@@ -114,27 +114,27 @@ def parse_args():
     formats.add_argument("-f", "--full",
                          action=Invert, default=settings["full"],
                          help="Display information with queue statuses.")
-    formats.add_argument("-F", "--full-with-resource",
-                         nargs='*', action=split_comma, metavar="resource_name,...",
-                         help="Full format with queue resource information.")
+    # formats.add_argument("-F", "--full-with-resource",
+    #                      nargs='*', action=split_comma, metavar="resource_name,...",
+    #                      help="Full format with queue resource information.")
     formats.add_argument("-e", "-ne", "--expand",
                          action=Invert, default=settings["expand"],
                          help="Full format display of information only visible jobs.")
     formats.add_argument("-ext", "--extra",
                          action=Invert, default=settings["extra"],
                          help="Add ticket information.")
-    formats.add_argument("-r", "--resource-req",
-                         action=Invert, default=settings["resource"],
-                         help="Add resource request information.")
+    # formats.add_argument("-r", "--resource-req",
+    #                      action=Invert, default=settings["resource"],
+    #                      help="Add resource request information.")
     formats.add_argument("-urg", "--urgency",
                          action=Invert, default=settings["urgency"],
                          help="Add urgency information.")
     formats.add_argument("-pri", "--priority",
                          action=Invert, default=settings["priority"],
                          help="Add priority information.")
-    formats.add_argument("-j", "--job",
-                         nargs='+', action=split_comma, metavar="job_list",
-                         help="Show scheduler job information")
+    # formats.add_argument("-j", "--job",
+    #                      nargs='+', action=split_comma, metavar="job_list",
+    #                      help="Show scheduler job information")
 
     filters = parser.add_argument_group("filters", "Filtering options for jobs or queues")
     filters.add_argument("-l", "--resource",
@@ -222,6 +222,19 @@ def parse_args():
     additional.add_argument("--ftckt", action=Invert, default=settings["ftckt"])
     additional.add_argument("--stckt", action=Invert, default=settings["stckt"])
     additional.add_argument("--share", action=Invert, default=settings["share"])
+
+    not_implemented = parser.add_argument_group("not implemented")
+    not_implemented.add_argument("-F", "--full-with-resource",
+                                 nargs='*', action=split_comma, metavar="resource_name,...",
+                                 help="Full format with queue resource information.")
+    not_implemented.add_argument("-r", "--resource-req",
+                                 action=Invert, default=settings["resource"],
+                                 help="Add resource request information.")
+    not_implemented.add_argument("-j", "--job",
+                                 nargs='+', action=split_comma, metavar="job_list",
+                                 help="Show scheduler job information (just output qstat -xml)")
+    not_implemented.add_argument("-xml", action="store_true",
+                                 help="Output as xml (just output qstat -xml)")
 
     args = parser.parse_args()
 
