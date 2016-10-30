@@ -1,8 +1,5 @@
 from __future__ import print_function
 
-from job import Job
-
-
 SEPARATOR = "  "
 
 
