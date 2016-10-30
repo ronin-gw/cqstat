@@ -66,6 +66,14 @@ class StatAttribute(Coloring):
     def datetime(self, l):
         return self.value.strftime("%Y-%m-%d %H:%M:%S").ljust(l)
 
+    @staticmethod
+    def store_datetime(val):
+        try:
+            return datetime.datetime.strptime(val, "%Y-%m-%dT%H:%M:%S.%f")
+        except ValueError:
+            # try store value as epoch
+            return datetime.datetime.fromtimestamp(float(val) / 1000)
+
     def second(self, l):
         m, s = divmod(self.value, 60)
         h, m = divmod(m, 60)
@@ -98,7 +106,7 @@ class StatAttribute(Coloring):
             "f2": (self.float2, float),
             'i': (self.int, float),
             "state": (self.state, None),
-            'd': (self.datetime, lambda v: datetime.datetime.strptime(v, "%Y-%m-%dT%H:%M:%S.%f")),
+            'd': (self.datetime, self.store_datetime),
             "sec": (self.second, float),
             "fsec": (self.fsecond, float),
             'b': (self.bytes, float),
