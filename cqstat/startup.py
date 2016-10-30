@@ -7,11 +7,10 @@ import json
 import getpass
 import itertools
 
-from template import Coloring
 from cluster import Cluster
 from queue import Queue
 from job import Job
-from lib import generate_pattern, Re_dummy
+from lib import generate_pattern, Re_dummy, Coloring
 from test import print_detail
 
 if sys.version_info > (3, ):

@@ -1,5 +1,5 @@
 from __future__ import print_function
-from template import StateManager
+from lib import Coloring
 
 
 class ClusterAttribute(object):
@@ -50,7 +50,7 @@ class ClusterAttribute(object):
             self.value = value
 
 
-class Cluster(StateManager):
+class Cluster(Coloring):
     attributes = ["name", "load", "used", "resv", "avail", "running", "total", "tempd", "mintr"]
 
     @classmethod
@@ -126,8 +126,7 @@ class Cluster(StateManager):
                  alarm=None, mand=None, cald=None, ambig=None, orphan=None, error=None,
                  mem_total=None, mem_used=None, swap_total=None, swap_used=None):
 
-        self.queues = self.children = []
-        self.set_queue = self.set_child
+        self.queues = []
 
         self.running = int(used) + int(avail)
         self.free = float(avail) / self.running.value
@@ -157,6 +156,9 @@ class Cluster(StateManager):
         self.orphan = orphan
         self.error = error
 
+    def set_queue(self, queue):
+        self.queues.append(queue)
+
     def get_running_jobs(self):
         return reduce(lambda a, b: a+b, map(lambda q: q.jobs, self.queues))
 
@@ -184,8 +186,8 @@ class Cluster(StateManager):
 
     def summation_reqmem(self, attr):
         reserved_memory = 0
-        for child in self.children:
-            child.summation_reqmem(attr)
-            reserved_memory += child.reserved_memory
+        for queue in self.queues:
+            queue.summation_reqmem(attr)
+            reserved_memory += queue.rsvmem.value
         self.rsvmemusage = 0. if self.memtot.value == 0 else reserved_memory / self.memtot.value
         self.rsvmem = reserved_memory

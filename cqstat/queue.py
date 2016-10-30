@@ -1,6 +1,5 @@
 from __future__ import print_function
-from template import StateManager
-from lib import calc_suffix
+from lib import calc_suffix, Coloring
 
 
 class QueueAttribute(object):
@@ -51,7 +50,7 @@ class QueueAttribute(object):
             self.value = value
 
 
-class Queue(StateManager):
+class Queue(Coloring):
     nodename_len = 0
     nodeinfo_len = None
 
@@ -94,9 +93,7 @@ class Queue(StateManager):
             self.__dict__[name] = value
 
     def __init__(self, name, qtype, resv, used, total, np_load, arch, status):
-        self.jobs = self.children = []
-        self.set_job = self.set_child
-        self.append_jobs = self.append_children
+        self.jobs = []
 
         self.name = name
         self.qtype = qtype
@@ -140,16 +137,22 @@ class Queue(StateManager):
         self.name.strfunc = self.get_colstrfunc(self.name, self.coloring)
         self.np_load.strfunc = self.get_colstrfunc(self.np_load, self.load_color)
 
+    def set_job(self, job):
+        self.jobs.append(job)
+
+    def append_jobs(self, jobs):
+        self.jobs += jobs
+
     def set_host_info(self, ncpu, nsoc, ncor, nthr, load, memtot, memuse, swapto, swapus):
         self.ncpu = int(ncpu)
         self.nsoc = int(nsoc)
         self.ncor = int(ncor)
         self.nthr = int(nthr)
         self.load = '0' if load == '-' else load
-        self.memtot = calc_suffix(memtot)
-        self.memuse = 0. if memuse == '-' else calc_suffix(memuse)
-        self.swapto = calc_suffix(swapto), 'b'
-        self.swapus = 0. if swapus == '-' else calc_suffix(swapus)
+        self.memtot = QueueAttribute("memtot", calc_suffix(memtot), 'b')
+        self.memuse = QueueAttribute("memuse", 0. if memuse == '-' else calc_suffix(memuse), 'b')
+        self.swapto = QueueAttribute("swapto", calc_suffix(swapto), 'b')
+        self.swapus = QueueAttribute("swapus", 0. if swapus == '-' else calc_suffix(swapus), 'b')
 
         self.memusage = self.memuse.value / self.memtot.value
         self.swapusage = self.swapus.value / self.swapto.value
@@ -193,11 +196,11 @@ class Queue(StateManager):
 
     def summation_reqmem(self, attr):
         reserved_memory = 0
-        for child in self.children:
-            child.summation_reqmem(attr)
-            reserved_memory += child.reserved_memory
+        for job in self.jobs:
+            job.summation_reqmem(attr)
+            reserved_memory += job.reserved_memory
         self.rsvmemusage = 0. if self.memtot.value == 0 else reserved_memory / self.memtot.value
-        self.rsvmem = reserved_memory
+        self.rsvmem = QueueAttribute("rsvmem", reserved_memory, 'b')
 
     def get_attributes(self):
         return tuple([getattr(self, n, QueueAttribute(n, None)) for n in Queue.attributes])
