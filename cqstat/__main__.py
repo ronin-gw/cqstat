@@ -4,6 +4,10 @@ import sys
 import qstat
 from lib import flatten
 
+# ignore broken pipe error
+from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE, SIG_DFL)
+
 
 def main():
     # CHECK ENVIRON #
@@ -13,12 +17,6 @@ def main():
 
     try:
         qstat.main()
-    except IOError as e:
-        errno, strerror = e
-        if errno == 32:  # Broken pipe
-            pass
-        else:
-            raise IOError(errno, strerror)
     except KeyboardInterrupt:
         pass
 

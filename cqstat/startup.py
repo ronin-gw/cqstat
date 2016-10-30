@@ -397,19 +397,19 @@ def _load_settings():
             with open(config_path) as conf:
                 user_settings = json.load(conf)
         except (IOError, ValueError) as e:
-            print >>sys.stderr, "WARNING: Faild to open {} ({})".format(
+            print("WARNING: Faild to open {} ({})".format(
                 config_path,
                 "{}: {}".format(e.__class__.__name__, str(e))
-            )
+            ), file=sys.stderr)
     else:
         try:
             with open(config_path, "w") as conf:
                 json.dump(default_settings, conf, sort_keys=True, indent=4)
         except (IOError, ValueError) as e:
-            print >>sys.stderr, "WARNING: Faild to create {} ({})".format(
+            print("WARNING: Faild to create {} ({})".format(
                 config_path,
                 "{}: {}".format(e.__class__.__name__, str(e))
-            )
+            ), file=sys.stderr)
 
     for k, v in user_settings.copy().items():
         if k == "username":
