@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from template import Coloring, StatAttribute
+from template import StatAttribute
 
 
 class JobAttribute(StatAttribute):
