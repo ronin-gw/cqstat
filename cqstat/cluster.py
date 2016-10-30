@@ -15,13 +15,15 @@ class ClusterAttribute(object):
     def int(self, l):
         return str(int(self.value)).rjust(l)
 
-    def bytes(self, l, suffix=('', "K", "M", "G")):
+    def bytes(self, l, suffix=('', 'K', 'M', 'G', 'T')):
         v = self.value
-        for s in suffix:
+        for s in suffix[:-1]:
             if v > 1024:
                 v /= 1024
             else:
                 break
+        else:
+            s = suffix[-1]
         return "{:3.1f}{}".format(v, s).rjust(l)
 
     def __init__(self, name, value, strfunc='l'):
@@ -72,6 +74,15 @@ class Cluster(Coloring):
         if cls.extra:
             cls.attributes += ["susm", "susth", "sussub", "suscal", "unknown",
                                "alarm", "mand", "cald", "ambig", "orphan", "error"]
+
+    @staticmethod
+    def get_colstrfunc(cattr, coloring):
+        basefunc = cattr.strfunc
+
+        def _f(l):
+            return basefunc(l) if l < 1 else coloring(basefunc(l))
+
+        return _f
 
     DEFAULT_FORMS = dict(
         load=("\nload", "f2"),
@@ -168,13 +179,20 @@ class Cluster(Coloring):
         swapto = sum(q.swapto.value for q in self.queues if q.disabled is False)
         swapus = sum(q.swapus.value for q in self.queues if q.disabled is False)
 
-        self.memusage = 0. if memtot == 0 else memuse / memtot
-        self.swapusage = 0. if swapto == 0 else swapus / swapto
-
         self.memtot = memtot
         self.memuse = memuse
         self.swapto = swapto
         self.swapus = swapus
+
+        self.memusage = 0. if memtot == 0 else memuse / memtot
+        self.swapusage = 0. if swapto == 0 else swapus / swapto
+        use_color = self._get_coloring(self.memusage, (0.5, 0.8), (None, "yellow", "red"))
+        swap_color = self._get_coloring(self.swapusage, (0.5, 0.8), (None, "yellow", "red"))
+        self.memtot.strfunc = self.get_colstrfunc(self.memtot, use_color)
+        self.memuse.strfunc = self.get_colstrfunc(self.memuse, use_color)
+        self.swapto.strfunc = self.get_colstrfunc(self.swapto, swap_color)
+        self.swapus.strfunc = self.get_colstrfunc(self.swapus, swap_color)
+
 
     def get_attributes(self):
         return tuple([getattr(self, n, ClusterAttribute(n, None)) for n in Cluster.attributes])
@@ -190,4 +208,9 @@ class Cluster(Coloring):
             queue.summation_reqmem(attr)
             reserved_memory += queue.rsvmem.value
         self.rsvmemusage = 0. if self.memtot.value == 0 else reserved_memory / self.memtot.value
+
         self.rsvmem = reserved_memory
+
+        rsv_color = self._get_coloring(self.rsvmemusage, (0.5, 0.8), (None, "yellow", "red"))
+        self.memtot.strfunc = self.get_colstrfunc(self.memtot, rsv_color)
+        self.rsvmem.strfunc = self.get_colstrfunc(self.rsvmem, rsv_color)
