@@ -2,7 +2,7 @@ from __future__ import print_function
 from cluster import Cluster
 from queue import Queue
 from job import Job
-from output import print_status, print_full_status, print_cluster_status
+from output import print_full_status, print_cluster_status
 
 
 def print_detail(args, settings):

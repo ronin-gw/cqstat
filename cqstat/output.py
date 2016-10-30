@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-from cluster import Cluster
 from job import Job
 
 
@@ -64,25 +63,6 @@ def print_cluster_status(clusters):
     for c in cluster_status:
         print(SEPARATOR.join(c))
 
-    # for attr in ("name", "used", "resv", "tot", "memtot", "rsvmem", "memuse", "swapus", "swapto"):
-    #     setattr(Cluster, attr+"_len", max(len(str(getattr(c, attr, ''))) for c in clusters))
-    #
-    # name_len, slot_len, mem_len = clusters[0].get_infolen()
-    #
-    # memhed = (("mem/" if Cluster.physical_memory else '') +
-    #           ("req/" if Cluster.required_memory else '') +
-    #           ("tot mem" if Cluster.required_memory or Cluster.physical_memory else '') +
-    #           ("  use/tot swap" if Cluster.swapped_memory else ''))
-    #
-    # header = "{}  {}  {}".format("queuename".ljust(name_len),
-    #                              "resv/used/tot (%)".center(slot_len),
-    #                              memhed.center(mem_len))
-    #
-    # print(header)
-    # print('-' * len(header))
-    # for c in clusters:
-    #     c.print_status()
-
 
 def print_job_status(jobs, visible_only=True):
     job_status = _get_job_status(jobs, visible_only)
@@ -93,18 +73,6 @@ def print_job_status(jobs, visible_only=True):
         print('-' * _get_row_length(attr_lens))
         for j in job_status:
             print(SEPARATOR.join(j))
-
-
-def print_status(clusters, pending_jobs):
-    jobs = []
-
-    for cluster in clusters:
-        for queue in cluster.queues:
-            for job in queue.jobs:
-                job.queue = queue.name
-                jobs.append(job)
-
-    print_job_status(jobs + pending_jobs)
 
 
 def print_full_status(clusters, pending_jobs, sort, full):

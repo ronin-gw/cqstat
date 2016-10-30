@@ -2,7 +2,6 @@ from __future__ import print_function
 import datetime
 
 from template import Coloring
-from lib import calc_suffix
 
 
 class JobAttribute(Coloring):

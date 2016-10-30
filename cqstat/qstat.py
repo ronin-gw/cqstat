@@ -10,9 +10,8 @@ except ImportError:
     from io import StringIO as cStringIO
 
 from startup import parse_args
-from lib import flatten
 from qcommand import get_reduced_info, add_jvi_info, get_cluster, build_cluster, add_host_info
-from output import print_job_status, print_cluster_status, print_full_status, print_status
+from output import print_job_status, print_cluster_status, print_full_status
 
 
 def main():

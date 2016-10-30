@@ -59,18 +59,15 @@ class Queue(StateManager):
     @staticmethod
     def get_colstrfunc(qattr, coloring):
         basefunc = qattr.strfunc
+
         def _f(l):
             return basefunc(l) if l < 1 else coloring(basefunc(l))
+
         return _f
 
     DEFAULT_FORMS = dict(
         qtype=("qtype", 'r'),
         np_load=("np_load", "f2")
-        # memuse=("memuse", 'r'),
-        # rsvmem=("rsvmem", 'r'),
-        # memtot=("memtot", 'r'),
-        # swapus=("swapus", 'r'),
-        # swapto=("swapto", 'r')
     )
 
     def __setattr__(self, name, value):
@@ -117,7 +114,7 @@ class Queue(StateManager):
                 self.load_color = self._color("red")
             if self.disabled:
                 self.coloring = self._color("black")
-        elif self.total  < 1:
+        elif self.total < 1:
             self.coloring = self._color("black")
         else:
             self.coloring = self._get_coloring(self.usage,
@@ -126,13 +123,6 @@ class Queue(StateManager):
 
         self.name.strfunc = self.get_colstrfunc(self.name, self.coloring)
         self.np_load.strfunc = self.get_colstrfunc(self.np_load, self.load_color)
-
-        # if len(self.name.value) > Queue.nodename_len:
-        #     Queue.nodename_len = len(self.name.value)
-        #
-        # self.memtot_len = self.rsvmem_len = self.memuse_len = self.swapus_len = self.swapto_len = 0
-
-        super(Queue, self).__init__()
 
     def set_host_info(self, ncpu, nsoc, ncor, nthr, load, memtot, memuse, swapto, swapus):
         self.ncpu = int(ncpu)
@@ -147,8 +137,6 @@ class Queue(StateManager):
 
         self.memusage = calc_suffix(self.memuse.value) / calc_suffix(self.memtot.value)
         self.swapusage = calc_suffix(self.swapus.value) / calc_suffix(self.swapto.value)
-
-        super(Queue, self).set_host_info()
 
     def get_rut_len(self):
         return (len(self.resv.strfunc(0)), len(self.used.strfunc(0)), len(self.total.strfunc(0)))
@@ -191,7 +179,6 @@ class Queue(StateManager):
         self.reserved_memory = sum(c.reserved_memory for c in self.children)
         self.rsvmemusage = 0. if calc_suffix(self.memtot.value) == 0 else self.reserved_memory / calc_suffix(self.memtot.value)
         self.rsvmem = QueueAttribute("rsvmem", add_suffix(self.reserved_memory), 'r')
-        self._set_rsvmem_color()
 
     def get_attributes(self):
         return tuple([getattr(self, n, QueueAttribute(n, None)) for n in Queue.attributes])
@@ -201,24 +188,7 @@ class Queue(StateManager):
             if job.is_visible is True:
                 return True
         return False
-    #
-    # def get_jobids(self):
-    #     return [job.id for job in self.jobs]
-    #
-    # def _get_r_u_t(self):
-    #     return self.slot_color('{}/{}/{}'.format(*map(lambda i: str(i).rjust(2), (self.resv, self.used, self.total ))))
-    #
-    # def print_status(self, indent=0):
-    #     print(' '*8*indent + '{} {} {}  {}{}  {}  {}'.format(
-    #         self.coloring(self.name.ljust(Queue.nodename_len)),
-    #         self.qtype.rjust(3),
-    #         self._get_r_u_t(),
-    #         self.load_color(self.np_load.rjust(5)),
-    #         self._get_mem_status(),
-    #         self.arch,
-    #         self.status
-    #     ))
-    #
+
     def key(self):
         keys = [self.status.value,
                 float(self.used.value)/self.total.value if self.total.value != 0 else 0.,
@@ -232,11 +202,3 @@ class Queue(StateManager):
             keys.append(self.swapusage)
 
         return tuple(keys)
-    #
-    # def get_infolen(self):
-    #     if not Queue.nodeinfo_len:
-    #         Queue.nodeinfo_len = (Queue.nodename_len + len(self.arch) +
-    #                               self.memtot_len + self.rsvmem_len + self.memuse_len +
-    #                               self.swapus_len + self.swapto_len + 24)
-    #
-    #     return Queue.nodeinfo_len
