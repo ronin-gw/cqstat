@@ -66,7 +66,10 @@ class Queue(Coloring):
         self.resv = QueueAttribute("resv", resv if resv else 0, 'i')
         self.used = QueueAttribute("used", used if used else 0, 'i')
         self.total = QueueAttribute("total", total if total else 0, 'i')
-        self.usage = (self.resv.value + self.used.value) / float(self.total.value)
+        if self.total.value != 0:
+            self.usage = (self.resv.value + self.used.value) / float(self.total.value)
+        else:
+            self.usage = 0.
         self.np_load = np_load
         self.arch = arch
         self.status = status if status else ''
@@ -77,7 +80,6 @@ class Queue(Coloring):
             self.disabled = False
 
         self.resource, self.hostname = name.split('@')
-        self.hostname = self.hostname.split('.')[0]
 
         # coloring queue name by status and slot usage
         self.coloring = self._color()

@@ -110,7 +110,6 @@ def add_host_info(clusters):
     output = subprocess.check_output(command.split())
 
     hosts = parse_qhost(output)
-
     for cluster in clusters:
         for queue in cluster.queues:
             queue.set_host_info(**hosts[queue.hostname])

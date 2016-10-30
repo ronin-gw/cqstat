@@ -34,12 +34,15 @@ CQS2KWAGS = dict(
     orphaned="orphan", error="error"
 )
 
-Q2KWAGS = dict(name="name", qtype="qtype", slots_used="used", slots_rsvd="resv",
-               slots_total="total", np_load_avg="np_load", arch="arch", state="status")
+Q2KWAGS = dict(
+    name="name", qtype="qtype", slots_used="used", slots_rsvd="resv", slots_total="total",
+    np_load_avg="np_load", load_avg="np_load", arch="arch", state="status"
+)
 
 H2KWAGS = dict(
-    num_proc="ncpu", m_socket="nsoc", m_core="ncor", m_thread="nthr", np_load_avg="load",
-    mem_total="memtot", mem_used="memuse", swap_total="swapto", swap_used="swapus"
+    num_proc="ncpu", m_socket="nsoc", m_core="ncor", m_thread="nthr",
+    np_load_avg="load", load_avg="load", mem_total="memtot", mem_used="memuse",
+    swap_total="swapto", swap_used="swapus"
 )
 
 
