@@ -186,3 +186,9 @@ class Cluster(Coloring):
         rsv_color = self._get_coloring(self.rsvmemusage, (0.5, 0.8), (None, "yellow", "red"))
         self.memtot.strfunc = self.get_colstrfunc(self.memtot, rsv_color)
         self.rsvmem.strfunc = self.get_colstrfunc(self.rsvmem, rsv_color)
+
+    def has_visible_job(self):
+        for queue in self.queues:
+            if queue.has_visible_job():
+                return True
+        return False

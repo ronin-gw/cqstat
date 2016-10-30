@@ -83,7 +83,7 @@ def print_full_status(clusters, pending_jobs, sort, full):
             queues = cluster.queues
 
         if not full:
-            queues = filter(lambda q: q.has_visible_job(), queues)
+            queues = list(filter(lambda q: q.has_visible_job(), queues))
 
         rut_len = list(map(max, zip(*(queue.get_rut_len() for queue in queues))))
 
