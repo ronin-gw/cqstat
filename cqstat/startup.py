@@ -241,7 +241,11 @@ def parse_args():
     EXT_ATTRS = set(["ntckts", "project", "department", "cpu", "mem", "io",
                      "tckts", "ovrts", "otckt", "ftckt", "stckt", "share"])
     URG_ATTRS = set(["nurg", "urg", "rrcontr", "wtcontr", "dlcontr", "deadline"])
-    PRI_ATTRS = set(["nurg", "nprior", "ntckts", "ppri"])
+    if settings["UGE"]:
+        # why uge qstat -pri -xml output lacks nprior and ntckts?
+        PRI_ATTRS = set(["nprior", "ppri"])
+    else:
+        PRI_ATTRS = set(["nurg", "nprior", "ntckts", "ppri"])
     JVI_ATTRS = set(["uid", "group", "gid", "sup_group", "department", "sub_at",
                      "strt_at", "wallclock", "cpu", "mem", "io", "iow", "ioops",
                      "vmem", "maxvmem", "share"])
@@ -382,6 +386,7 @@ def _load_settings():
         "green": "green",
         "blue": "blue",
         "black": "b_black",
+        "UGE": True
     }
 
     config_path = os.path.expanduser(CONFIG_PATH)
