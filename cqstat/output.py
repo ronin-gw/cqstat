@@ -58,10 +58,10 @@ def print_cluster_status(clusters):
 
     headers, cluster_status, attr_lens = _justify_string_with_multiheader(cluster_status)
     for h in headers:
-        print(SEPARATOR.join(h))
+        print(*h, sep=SEPARATOR)
     print('-' * _get_row_length(attr_lens))
     for c in cluster_status:
-        print(SEPARATOR.join(c))
+        print(*c, sep=SEPARATOR)
 
 
 def print_job_status(jobs, visible_only=True):
@@ -69,10 +69,10 @@ def print_job_status(jobs, visible_only=True):
 
     if job_status:
         header, job_status, attr_lens = _justify_string_with_header(job_status)
-        print(SEPARATOR.join(header))
+        print(*header, sep=SEPARATOR)
         print('-' * _get_row_length(attr_lens))
         for j in job_status:
-            print(SEPARATOR.join(j))
+            print(*j, sep=SEPARATOR)
 
 
 def print_full_status(clusters, pending_jobs, sort, full):
@@ -80,7 +80,7 @@ def print_full_status(clusters, pending_jobs, sort, full):
 
     for cluster in clusters:
         if full or cluster.has_visible_job():
-            print(SEPARATOR.join(cluster.get_simple_status()))
+            print(*cluster.get_simple_status(), sep=SEPARATOR)
 
         if sort:
             queues = sorted(cluster.queues, key=lambda q: q.key())
@@ -133,4 +133,4 @@ def print_full_status(clusters, pending_jobs, sort, full):
         print('\n' + SEPARATOR.join(header))
         print('-' * row_length)
         for j in job_status:
-            print(SEPARATOR.join(j))
+            print(*j, sep=SEPARATOR)
