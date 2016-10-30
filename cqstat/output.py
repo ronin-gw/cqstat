@@ -90,14 +90,14 @@ def print_full_status(clusters, pending_jobs, sort, full):
         if not full:
             queues = filter(lambda q: q.has_visible_job(), queues)
 
-        rut_len = map(max, zip(*(queue.get_rut_len() for queue in queues)))
+        rut_len = list(map(max, zip(*(queue.get_rut_len() for queue in queues))))
 
         mem_len = {}
         for queue in queues:
             for k, v in queue.get_memory_len().items():
                 mem_len[k] = max(mem_len.get(k, 0), v)
 
-        swap_len = map(max, zip(*(queue.get_swap_len() for queue in queues)))
+        swap_len = list(map(max, zip(*(queue.get_swap_len() for queue in queues))))
 
         status = []
         jobs = []

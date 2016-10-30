@@ -4,14 +4,16 @@ import array
 from termios import TIOCGWINSZ
 import fcntl
 import contextlib
-try:
-    import cStringIO
-except ImportError:
-    from io import StringIO as cStringIO
 
 from startup import parse_args
 from qcommand import get_reduced_info, add_jvi_info, get_cluster, build_cluster, add_host_info
 from output import print_job_status, print_cluster_status, print_full_status
+
+if sys.version_info > (3, ):
+    from functools import reduce
+    from io import StringIO as cStringIO
+else:
+    import cStringIO
 
 
 def main():

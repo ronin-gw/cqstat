@@ -93,7 +93,7 @@ class Queue(Coloring):
                 self.load_color = self._color("red")
             if self.disabled:
                 self.coloring = self._color("black")
-        elif self.total < 1:
+        elif self.total.value < 1:
             self.coloring = self._color("black")
         else:
             self.coloring = self._get_coloring(self.usage,

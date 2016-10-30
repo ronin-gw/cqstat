@@ -1,6 +1,10 @@
 from __future__ import print_function
 from template import Coloring, StatAttribute
 
+import sys
+if sys.version_info > (3, ):
+    from functools import reduce
+
 
 class ClusterAttribute(StatAttribute):
     def bytes(self, l, suffix=('', 'K', 'M', 'G', 'T')):
@@ -99,7 +103,7 @@ class Cluster(Coloring):
         self.running = int(used) + int(avail)
         self.free = float(avail) / self.running.value
 
-        if self.running < 1:
+        if self.running.value < 1:
             colfunc = self._color("black")
         else:
             colfunc = self._get_coloring(1 - self.free, (0, 0.5, 0.8), ("blue", "green", "yellow", "red"))
