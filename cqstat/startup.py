@@ -9,7 +9,7 @@ import itertools
 
 from cluster import Cluster
 from queue import Queue
-from job import Job
+from job import Job, JobAttribute
 from lib import generate_pattern, Re_dummy
 from template import Coloring
 from test import print_detail
@@ -429,7 +429,7 @@ def _setup_class(args, settings):
     Queue.swapped_memory = args.swapped_memory
     Queue.update_attrs()
 
-    Job.name_length = args.name_len[0]
+    JobAttribute.name_length = args.name_len[0]
     if args.split_ss_time:
         Job.attributes.remove("sub_strt_at")
     else:

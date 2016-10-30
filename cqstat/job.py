@@ -1,12 +1,13 @@
 from __future__ import print_function
 
-from template import Coloring
-from template import StatAttribute as JobAttribute
+from template import Coloring, StatAttribute
+
+
+class JobAttribute(StatAttribute):
+    name_length = 10
 
 
 class Job(object):
-    name_length = 10
-
     # Output rows
     attributes = ["id", "prior", "nurg", "nprior", "ntckts",
                   "urg", "rrcontr", "wtcontr", "dlcontr", "ppri",
@@ -19,6 +20,8 @@ class Job(object):
     DEFAULT_FORMS = dict(
         id=("job-ID", 'r'),
         prior=("prior", "f5"),
+        name=("name", "sl"),
+        user=("user", "sl"),
         state=("state", "state"),
         jclass=("jclass", 'l'),
         nurg=("nurg", "f5"),

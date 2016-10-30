@@ -30,6 +30,13 @@ class StatAttribute(Coloring):
     def ljust(self, l):
         return str(self.value).ljust(l)
 
+    @classmethod
+    def sliceljust(cls, v):
+        if cls.name_length < 1:
+            return str(v)
+        else:
+            return str(v)[:cls.name_length]
+
     def float5(self, l):
         return '{:.5f}'.format(self.value).rjust(l)
 
@@ -79,13 +86,6 @@ class StatAttribute(Coloring):
 
     def bytesec(self, l):
         return self.bytes(l, suffix=('Bs ', "KBs", "MBs", "GBs"))
-
-    @classmethod
-    def sliceljust(cls, v):
-        if cls.name_length < 1:
-            return str(v)
-        else:
-            return str(v)[:cls.name_length]
 
     def __init__(self, name, value, strfunc='l'):
         # shortcut: (stringify function, store func)

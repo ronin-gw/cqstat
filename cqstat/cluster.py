@@ -150,7 +150,6 @@ class Cluster(Coloring):
         self.swapto.strfunc = self.get_colstrfunc(self.swapto, swap_color)
         self.swapus.strfunc = self.get_colstrfunc(self.swapus, swap_color)
 
-
     def get_attributes(self):
         return tuple([getattr(self, n, ClusterAttribute(n, None)) for n in Cluster.attributes])
 
