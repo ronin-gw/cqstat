@@ -71,8 +71,12 @@ class StatAttribute(Coloring):
         try:
             return datetime.datetime.strptime(val, "%Y-%m-%dT%H:%M:%S.%f")
         except ValueError:
-            # try store value as epoch
-            return datetime.datetime.fromtimestamp(float(val) / 1000)
+            # try parsing without msec
+            try:
+                return datetime.datetime.strptime(val, "%Y-%m-%dT%H:%M:%S")
+            except ValueError:
+                # try store value as epoch
+                return datetime.datetime.fromtimestamp(float(val) / 1000)
 
     def second(self, l):
         m, s = divmod(self.value, 60)

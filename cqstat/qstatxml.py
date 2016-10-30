@@ -79,6 +79,8 @@ def parse_djob_info(string):
         attrs = {VJI2KWARG[e.tag]: e.text for e in job if e.tag in VJI2KWARG}
         attrs["sup_group"] = ','.join(_elems2list(job.find("JB_supplementary_group_list"), "ST_name"))
         attrs["jh_resources"] = _elems2dict(job.find("JB_hard_resource_list"), "CE_name", "CE_doubleval")
+        if not attrs["jh_resources"]:
+            attrs["jh_resources"] = _elems2dict(job.find("JB_hard_resource_list"), "CE_name", "CE_doubleval", "qstat_l_requests")
 
         ja_tasks = {}
         for task in job.findall("JB_ja_tasks/element"):
