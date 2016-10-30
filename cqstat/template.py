@@ -24,24 +24,33 @@ class StateManager(Coloring):
     required_memory = physical_memory = swapped_memory = False
 
     def __init__(self):
-        if self.tot == 0:
-            self.usage = 0.
-        else:
-            self.usage = float(self.used) / self.tot
-
-        self._set_color()
-        self._set_slot_color()
-
-        self.rsvmem_color = self._color()
-        self.mem_color = self._color()
-        self.swap_color = self._color()
+        # if self.total == 0:
+        #     self.usage = 0.
+        # else:
+        #     self.usage = float(self.used) / self.total
+        #
+        # self._set_color()
+        # self._set_slot_color()
+        #
+        # self.rsvmem_color = self._color()
+        # self.mem_color = self._color()
+        # self.swap_color = self._color()
+        pass
 
     def set_child(self, child):
         self.children.append(child)
 
-    def set_vmem(self, vmem_dict):
+    def append_children(self, children):
+        self.children += children
+
+    # def set_vmem(self, vmem_dict):
+    #     for child in self.children:
+    #         child.set_vmem(vmem_dict)
+    #     self._get_reserved_memory()
+
+    def summation_reqmem(self, attr):
         for child in self.children:
-            child.set_vmem(vmem_dict)
+            child.summation_reqmem(attr)
         self._get_reserved_memory()
 
     def _get_reserved_memory(self):

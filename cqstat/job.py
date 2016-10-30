@@ -253,8 +253,10 @@ class Job(object):
     def visible(self):
         self.is_visible = True
 
-    def set_vmem(self, vmem):
-        self.reserved_memory = calc_suffix(vmem[self.id.value]) * int(self.slots.value)
+    def summation_reqmem(self, attr):
+        a = getattr(self, attr)
+        v = a.value if isinstance(a, JobAttribute) else float(a)
+        self.reserved_memory = v * int(self.slots.value)
 
     def get_attributes(self, visible_only=True):
         if not self.is_visible and visible_only:

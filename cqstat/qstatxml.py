@@ -34,12 +34,24 @@ CQS2KWAGS = dict(
     orphaned="orphan", error="error"
 )
 
+Q2KWAGS = dict(name="name", qtype="qtype", slots_used="used", slots_rsvd="resv",
+               slots_total="total", np_load_avg="np_load", arch="arch", state="status")
 
-def parse_job_list(string, xpath):
+H2KWAGS = dict(
+    num_proc="ncpu", m_socket="nsoc", m_core="ncor", m_thread="nthr", np_load_avg="load",
+    mem_total="memtot", mem_used="memuse", swap_total="swapto", swap_used="swapus"
+)
+
+
+def _parse_job_list_tree(jobs):
     return [
         {TAG2KWARG[e.tag]: e.text for e in element if e.tag in TAG2KWARG}
-        for element in ElementTree.fromstring(string).findall(xpath)
+        for element in jobs
     ]
+
+
+def parse_job_list(string, xpath):
+    return _parse_job_list_tree(ElementTree.fromstring(string).findall(xpath))
 
 
 def _elems2list(tree, tag, ename="element"):
@@ -82,6 +94,41 @@ def parse_cluster_summary(string):
         {CQS2KWAGS[e.tag]: e.text for e in queue if e.tag in CQS2KWAGS}
         for queue in ElementTree.fromstring(string).findall("cluster_queue_summary")
     ]
+
+
+def parse_queue_info(string, with_pjobs):
+    root = ElementTree.fromstring(string)
+    queues = []
+
+    for queue in root.findall("queue_info/Queue-List"):
+        q = {}
+        for tag, attr in Q2KWAGS.items():
+            e = queue.find(tag)
+            q[attr] = None if e is None else e.text
+        j = _parse_job_list_tree(queue.findall("job_list"))
+        queues.append((q, j))
+
+    if with_pjobs:
+        pending_jobs = _parse_job_list_tree(root.findall("job_info/job_list"))
+    else:
+        pending_jobs = None
+
+    return queues, pending_jobs
+
+
+def parse_qhost(string):
+    root = ElementTree.fromstring(string)
+    hosts = {}
+
+    for host in root.findall("host"):
+        hostvalues = {}
+        for hv in host:
+            n = hv.attrib["name"]
+            if n in H2KWAGS:
+                hostvalues[H2KWAGS[n]] = hv.text
+        hosts[host.attrib["name"]] = hostvalues
+
+    return hosts
 
 
 if __name__ == "__main__":

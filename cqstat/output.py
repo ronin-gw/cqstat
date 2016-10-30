@@ -7,6 +7,10 @@ from job import Job
 SEPARATOR = "  "
 
 
+def _get_row_length(attr_lens):
+    return sum(attr_lens) + (len(attr_lens) - 1) * len(SEPARATOR)
+
+
 def _get_width(table, strip_len):
     len_table = [map(len, v) for v in table]
     if strip_len:
@@ -56,7 +60,7 @@ def print_cluster_status(clusters):
     headers, cluster_status, attr_lens = _justify_string_with_multiheader(cluster_status)
     for h in headers:
         print(SEPARATOR.join(h))
-    print('-' * (sum(attr_lens) + len(headers[0])*len(SEPARATOR) - 1))
+    print('-' * _get_row_length(attr_lens))
     for c in cluster_status:
         print(SEPARATOR.join(c))
 
@@ -86,7 +90,7 @@ def print_job_status(jobs, visible_only=True):
     if job_status:
         header, job_status, attr_lens = _justify_string_with_header(job_status)
         print(SEPARATOR.join(header))
-        print('-' * (sum(attr_lens) + len(header)*len(SEPARATOR) - 1))
+        print('-' * _get_row_length(attr_lens))
         for j in job_status:
             print(SEPARATOR.join(j))
 
@@ -108,36 +112,57 @@ def print_full_status(clusters, pending_jobs, sort, full):
 
     for cluster in clusters:
         if full or cluster.has_visible_job():
-            cluster.print_simple_status()
+            print(SEPARATOR.join(cluster.get_simple_status()))
 
         if sort:
             queues = sorted(cluster.queues, key=lambda q: q.key())
         else:
             queues = cluster.queues
 
+        if not full:
+            queues = filter(lambda q: q.has_visible_job(), queues)
+
+        rut_len = map(max, zip(*(queue.get_rut_len() for queue in queues)))
+
+        mem_len = {}
         for queue in queues:
-            if full or queue.has_visible_job():
-                queue.print_status(indent=1)
+            for k, v in queue.get_memory_len().items():
+                mem_len[k] = max(mem_len.get(k, 0), v)
 
-            if not queue.has_visible_job():
-                continue
+        swap_len = map(max, zip(*(queue.get_swap_len() for queue in queues)))
 
-            job_status, attr_lens = _justify_string(_get_job_status(queue.jobs))
+        status = []
+        jobs = []
+        for queue in queues:
+            queue.set_rut(*rut_len)
+            if mem_len:
+                queue.set_memory_attrs(**mem_len)
+            if swap_len:
+                queue.set_swap_attrs(*swap_len)
+
+            status.append(queue.get_attributes())
+            jobs.append(queue.jobs)
+        queue_status, q_attr_lens = _justify_string(status)
+
+        for q_status, jobs in zip(queue_status, jobs):
+            print((' ' * 8) + SEPARATOR.join(q_status))
+
+            job_status, attr_lens = _justify_string(_get_job_status(jobs))
 
             if job_status:
-                print((' ' * 8) + ('-' * (sum(attr_lens) + len(attr_lens) + 7)))
+                print((' ' * 8) + ('-' * (_get_row_length(attr_lens) + 8)))
             for j in job_status:
-                print((' ' * 16) + ' '.join(j))
+                print((' ' * 16) + SEPARATOR.join(j))
 
     visible_job_num = sum(j.is_visible for j in pending_jobs) if pending_jobs else 0
     if visible_job_num:
         job_status = _get_job_status(pending_jobs)
 
         header, job_status, attr_lens = _justify_string_with_header(job_status)
-        row_length = sum(attr_lens) + len(attr_lens) - 1
+        row_length = _get_row_length(attr_lens)
 
         print('\n' + "   {} PENDING JOBS   ".format(visible_job_num).center(row_length, '#'))
-        print('\n' + ' '.join(header))
+        print('\n' + SEPARATOR.join(header))
         print('-' * row_length)
         for j in job_status:
-            print(' '.join(j))
+            print(SEPARATOR.join(j))

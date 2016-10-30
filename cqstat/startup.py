@@ -235,7 +235,7 @@ def parse_args():
 
     setattr(args, "full_format", any((args.full, args.full_with_resource,
                                       args.expand, args.resource_req)))
-    if args.split_ss_time or (args.required_memory and args.full_format):
+    if args.split_ss_time or args.required_memory:
         setattr(args, "need_jvi", True)
     else:
         setattr(args, "need_jvi", False)
@@ -418,12 +418,16 @@ def _setup_class(args, settings):
     Coloring.enable = not args.bleach
     Coloring.COLOR = {k: v for k, v in settings.items() if k in ("red", "yellow", "green", "blue", "black")}
 
-    if args.extra:
-        Cluster.enable_ext()
+    Cluster.extra = args.extra
+    Cluster.required_memory = args.required_memory
+    Cluster.physical_memory = args.physical_memory
+    Cluster.swapped_memory = args.swapped_memory
+    Cluster.update_attrs()
 
     Queue.required_memory = args.required_memory
     Queue.physical_memory = args.physical_memory
     Queue.swapped_memory = args.swapped_memory
+    Queue.update_attrs()
 
     Job.name_length = args.name_len[0]
     if args.split_ss_time:

@@ -45,9 +45,24 @@ class Cluster(StateManager):
     attributes = ["name", "load", "used", "resv", "avail", "running", "total", "tempd", "mintr"]
 
     @classmethod
-    def enable_ext(cls):
-        cls.attributes += ["susm", "susth", "sussub", "suscal", "unknown",
-                           "alarm", "mand", "cald", "ambig", "orphan", "error"]
+    def update_attrs(cls):
+        cls.attributes = ["name", "load", "used", "resv", "avail", "running", "total"]
+
+        if cls.required_memory or cls.physical_memory:
+            if cls.physical_memory:
+                cls.attributes.append("memuse")
+            if cls.required_memory:
+                cls.attributes.append("rsvmem")
+            cls.attributes.append("memtot")
+
+        if cls.swapped_memory:
+            cls.attributes += ["swapus", "swapto"]
+
+        cls.attributes += ["tempd", "mintr"]
+
+        if cls.extra:
+            cls.attributes += ["susm", "susth", "sussub", "suscal", "unknown",
+                               "alarm", "mand", "cald", "ambig", "orphan", "error"]
 
     DEFAULT_FORMS = dict(
         load=("\nload", "f2"),
@@ -68,7 +83,13 @@ class Cluster(StateManager):
         cald=("disabled\ncalendar", 'i'),
         ambig=("\nambiguous", 'i'),
         orphan=("\norphaned", 'i'),
-        error=("\nerror", 'i')
+        error=("\nerror", 'i'),
+
+        memuse=("memory\nusage", 'r'),
+        rsvmem=("memory\nreserved", 'r'),
+        memtot=("memory\ntotal", 'r'),
+        swapus=("swap\nuseage", 'r'),
+        swapto=("swap\ntotal", 'r')
     )
 
     def __setattr__(self, name, value):
@@ -111,7 +132,7 @@ class Cluster(StateManager):
         self.load = load if load != "-NA-" else None
         self.used = used
         self.resv = resv
-        self.avail = ClusterAttribute("\navail", avail, self.get_avail_strfunc(int(avail), self.running.value))
+        self.avail = ClusterAttribute("\navail", int(avail), self.get_avail_strfunc(int(avail), self.running.value))
         self.total = total
         self.tempd = tempd
         self.mintr = mintr
@@ -127,11 +148,50 @@ class Cluster(StateManager):
         self.orphan = orphan
         self.error = error
 
+    def apply_queue_stat(self):
+        # self.used = sum(q.used for q in self.queues if q.disabled is False)
+        # self.resv = sum(q.resv for q in self.queues if q.disabled is False)
+        # self.total = sum(q.tot for q in self.queues if q.disabled is False)
+        # self.avail = self.tot - self.used
+        # self.usage = 0. if self.tot == 0 else float(self.used) / self.tot
+        # self._set_color()
+        pass
+
+    def get_running_jobs(self):
+        return reduce(lambda a, b: a+b, map(lambda q: q.jobs, self.queues))
+
+    def set_host_info(self):
+        memtot = sum(calc_suffix(q.memtot.value) for q in self.queues if q.disabled is False)
+        memuse = sum(calc_suffix(q.memuse.value) for q in self.queues if q.disabled is False)
+        swapto = sum(calc_suffix(q.swapto.value) for q in self.queues if q.disabled is False)
+        swapus = sum(calc_suffix(q.swapus.value) for q in self.queues if q.disabled is False)
+
+        self.memusage = 0. if memtot == 0 else memuse / memtot
+        self.swapusage = 0. if swapto == 0 else swapus / swapto
+
+        self.memtot = add_suffix(memtot)
+        self.memuse = add_suffix(memuse)
+        self.swapto = add_suffix(swapto)
+        self.swapus = add_suffix(swapus)
+
+        super(Cluster, self).set_host_info()
+
     def get_attributes(self):
         # if not self.is_visible and visible_only:
         #     return None
 
         return tuple([getattr(self, n, ClusterAttribute(n, None)) for n in Cluster.attributes])
+
+    def get_simple_status(self):
+        return (self.name.strfunc(1),
+                "{}/{}/{}".format(self.resv.strfunc(1), self.used.strfunc(1), self.running.strfunc(1)),
+                "({:3.0f}%)".format(100. * (self.resv.value + self.used.value) / self.running.value))
+
+    def _get_reserved_memory(self):
+        self.reserved_memory = sum(c.reserved_memory for c in self.children)
+        self.rsvmemusage = 0. if calc_suffix(self.memtot.value) == 0 else self.reserved_memory / calc_suffix(self.memtot.value)
+        self.rsvmem = add_suffix(self.reserved_memory)
+        self._set_rsvmem_color()
 
 # class Cluster(StateManager):
 #     name_len = 0

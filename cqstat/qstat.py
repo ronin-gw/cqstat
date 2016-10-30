@@ -11,7 +11,7 @@ except ImportError:
 
 from startup import parse_args
 from lib import flatten
-from qcommand import get_reduced_info, add_jvi_info, get_cluster, build_cluster, add_host_info, get_resource_option
+from qcommand import get_reduced_info, add_jvi_info, get_cluster, build_cluster, add_host_info
 from output import print_job_status, print_cluster_status, print_full_status, print_status
 
 
@@ -58,7 +58,10 @@ def watch_qstat(args):
 
 
 def qstat(args):
-    if not any((args.cluster_only, args.full, args.full_with_resource, args.expand, args.resource_req, args.job)):
+    if args.job:
+        pass
+
+    elif not any((args.cluster_only, args.full, args.full_with_resource, args.expand, args.resource_req)):
         running_jobs, pending_jobs = get_reduced_info(args.options)
         if args.need_jvi:
             add_jvi_info(running_jobs + pending_jobs, '*' if "-u *" in args.options else None)
@@ -71,38 +74,23 @@ def qstat(args):
 
         print_cluster_status(clusters)
 
-    # clusters, pending_jobs = build_cluster(args.options, args.user_pattern)
-    # pending_jobs = pending_jobs if args.pending_jobs else None
-    #
-    # if not (args.cluster_only or args.expand or args.full):
-    #     print_status(clusters, pending_jobs)
+    else:
+        clusters, pending_jobs = build_cluster(args.options, args.user_pattern, args.pending_jobs)
+        running_jobs = reduce(lambda a, b: a + b, map(lambda c: c.get_running_jobs(), clusters))
 
-    # elif args.required_memory:
-    #     clusters, pending_jobs = build_cluster(args.options, args.user_pattern)
-    #     pending_jobs = pending_jobs if args.pending_jobs else None
-    #
-    #     jobids = flatten(c.get_jobids() for c in clusters)
-    #     if isinstance(args.required_memory, str):
-    #         vmem_list = get_resource_option(jobids, args.required_memory)
-    #     else:
-    #         vmem_list = get_resource_option(jobids)
-    #
-    #     for cluster in clusters:
-    #         add_host_info(cluster.queues)
-    #         cluster.set_host_info()
-    #         cluster.set_vmem(vmem_list)
-    #         cluster.set_queue_printlen()
-    #
-    # elif args.physical_memory or args.swapped_memory:
-    #     for cluster in clusters:
-    #         add_host_info(cluster.queues)
-    #         cluster.set_host_info()
-    #         cluster.set_queue_printlen()
-    #
-    # if args.cluster_only:
-    #     print_cluster_status(clusters)
-    # elif args.expand or args.full:
-    #     print_full_status(clusters, pending_jobs, not args.no_sort, args.full)
+        if args.need_jvi:
+            add_jvi_info(running_jobs + pending_jobs, '*')
+
+        if args.required_memory or args.physical_memory or args.swapped_memory:
+            add_host_info(clusters)
+            for cluster in clusters:
+                if args.required_memory:
+                    cluster.summation_reqmem("s_vmem" if args.required_memory is True else args.required_memory)
+
+        if args.cluster_only:
+            print_cluster_status(clusters)
+        else:
+            print_full_status(clusters, pending_jobs, not args.no_sort, args.full)
 
 
 if __name__ == "__main__":
