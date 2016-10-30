@@ -107,7 +107,11 @@ def parse_queue_info(string, with_pjobs):
         q = {}
         for tag, attr in Q2KWAGS.items():
             e = queue.find(tag)
-            q[attr] = None if e is None else e.text
+            if e is None:
+                if attr not in q:
+                    q[attr] = None
+            else:
+                q[attr] = e.text
         j = _parse_job_list_tree(queue.findall("job_list"))
         queues.append((q, j))
 
