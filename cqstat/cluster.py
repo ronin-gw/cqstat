@@ -99,7 +99,7 @@ class Cluster(Coloring):
         self.running = int(used) + int(avail)
         self.free = float(avail) / self.running.value
 
-        if int(avail) < 1:
+        if self.running < 1:
             colfunc = self._color("black")
         else:
             colfunc = self._get_coloring(1 - self.free, (0, 0.5, 0.8), ("blue", "green", "yellow", "red"))

@@ -11,7 +11,7 @@ def print_detail(args, settings):
             100, "tgroup", 100, "tgroup",
             "test project", "test department",
             "2016-01-01T12:34:56.000", "2016-01-01T12:33:21.000", "2016-01-01T12:34:56.000", None,
-            "00:01:35", "00:01:00", "12.00000 GBs", "0.00984 GB",
+            "95", "60", "12884901888", "10565619.54816",
             "0.489 s", "1563", "12.000G", "12.000G",
             0, 0, 0, 0, 0,
             0., None, "6", "1")
@@ -20,7 +20,7 @@ def print_detail(args, settings):
              101, "tgroup", 100, "tgroup",
              "test project", "test department",
              "2016-01-01T12:34:00.000", "2016-01-01T12:33:00.000", "2016-01-01T12:34:00.000", None,
-             "00:01:00", "00:00:35", "8.00000 GBs", "0.00263 GB",
+             "60", "35", "8589934592", "8589934592",
              "0.135 s", "8275", "8.000G", "8.000G",
              0, 0, 0, 0, 0,
              0., None, "4", "1")
@@ -38,18 +38,18 @@ def print_detail(args, settings):
              101, "tgroup", 100, "tgroup",
              "test project", "test department",
              "2016-01-01T12:30:11.000", "2016-01-01T12:30:00.000", "2016-01-01T12:30:11.000", None,
-             "00:00:11", "00:00:10", "134.00000 GBs", "0.03246 GB",
+             "11", "10", "143881404416", "34853659.60704",
              "0.354 s", "2345", "57.400G", "57.400G",
              0, 0, 0, 0, 0,
              0., None, "20", "1")
 
-    q = Queue("cluster01.q@host001", "BIP", "6/10/20", "4.71", "lx-amd64")
-    qo = Queue("cluster01.q@host002", "BIP", "0/0/20", "0.03", "lx-amd64")
-    q1 = Queue("cluster02.q@host003", "BIP", "0/20/20", "21.38", "lx-amd64", "a")
-    q2 = Queue("cluster02.q@host004", "BIP", "0/0/20", "0.13", "lx-amd64", "d")
+    q = Queue("cluster01.q@host001", "BIP", "0", "10", "20", "4.71", "lx-amd64", '')
+    qo = Queue("cluster01.q@host002", "BIP", "0", "0", "20", "0.03", "lx-amd64", '')
+    q1 = Queue("cluster02.q@host003", "BIP", "0", "20", "20", "21.38", "lx-amd64", "a")
+    q2 = Queue("cluster02.q@host004", "BIP", "0", "0", "20", "0.13", "lx-amd64", "d")
 
-    c = Cluster("cluster01.q", "4.38", "10", "0", "40", "40", "0", "0")
-    c2 = Cluster("cluster02.q", "4.38", "10", "0", "40", "40", "0", "0")
+    c = Cluster("cluster01.q", "4.38", "10", "0", "30", "40", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0")
+    c2 = Cluster("cluster02.q", "4.38", "10", "0", "0", "40", "20", "0", "0", "0", "0", "0", "0", "20", "20", "0", "0", "0", "0")
 
     q.set_job(j)
     q.set_job(jo)
@@ -71,11 +71,13 @@ def print_detail(args, settings):
     c.set_host_info()
     c2.set_host_info()
 
-    c.set_vmem({"12344": "3G", "12345": "4G"})
-    c2.set_vmem({"12340": "3G"})
+    j.s_vmem = 4294967296
+    jo.s_vmem = 3221225472
+    ja.s_vmem = 3221225472
+    jp.s_vmem = 3221225472
 
-    c.set_queue_printlen()
-    c2.set_queue_printlen()
+    c.summation_reqmem("s_vmem")
+    c2.summation_reqmem("s_vmem")
 
     pj = [jp] if args.pending_jobs else []
 
@@ -86,7 +88,13 @@ def print_detail(args, settings):
     print()
     print("full format preview (-e/-f):")
     print()
-    print("<cluster> used/total slot (rate)")
+    print(
+        "<cluster> used/total slot (rate) " +
+        ("use/" if args.physical_memory else '') +
+        ("req/" if args.required_memory else '') +
+        ("tot mem" if args.required_memory or args.physical_memory else '') +
+        ("  use/tot swap" if args.swapped_memory else '')
+    )
     print(
         "\t<queuename> qtype resv/used/tot load_avg " +
         (
