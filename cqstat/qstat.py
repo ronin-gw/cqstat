@@ -62,7 +62,7 @@ def qstat(args):
     if args.job:
         pass
 
-    elif not args.full_format:
+    elif not (args.cluster_only or args.full_format):
         running_jobs, pending_jobs = get_reduced_info(args.options)
         if args.need_jvi:
             add_jvi_info(running_jobs + pending_jobs, '*' if "-u *" in args.options else None)
