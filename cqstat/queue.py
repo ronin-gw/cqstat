@@ -141,7 +141,7 @@ class Queue(Coloring):
             k: len(getattr(self, a).strfunc(0))
             for k, a, arg in (("use_len", "memuse", Queue.physical_memory),
                               ("rsv_len", "rsvmem", Queue.required_memory),
-                              ("tot_len", "memtot", True))
+                              ("tot_len", "memtot", Queue.physical_memory or Queue.required_memory))
             if arg is True
         }
 
