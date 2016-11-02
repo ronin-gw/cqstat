@@ -7,7 +7,7 @@ class QueueAttribute(StatAttribute):
     def bytes(self, l, suffix=('', 'K', 'M', 'G', 'T')):
         v = self.value
         for s in suffix[:-1]:
-            if v > 1024:
+            if v >= 1024:
                 v /= 1024
             else:
                 break

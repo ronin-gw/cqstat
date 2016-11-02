@@ -90,7 +90,7 @@ class StatAttribute(Coloring):
     def bytes(self, l, suffix=('B ', "KB", "MB", "GB")):
         v = self.value
         for s in suffix:
-            if v > 1024:
+            if v >= 1024:
                 v /= 1024
             else:
                 break
