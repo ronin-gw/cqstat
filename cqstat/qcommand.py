@@ -1,4 +1,5 @@
 import subprocess
+from collections import OrderedDict
 
 from cluster import Cluster
 from queue import Queue
@@ -78,7 +79,7 @@ def get_cluster(options):
 
 
 def build_cluster(options, user_pattern, with_pjobs):
-    clusters = {kwargs["name"]: Cluster(**kwargs) for kwargs in get_cluster_info(options)}
+    clusters = OrderedDict((kwargs["name"], Cluster(**kwargs)) for kwargs in get_cluster_info(options))
 
     command = "qstat -xml -f -u *" + options
     output = subprocess.check_output(command.split())
