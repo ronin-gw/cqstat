@@ -6,7 +6,7 @@ from output import print_job_status, print_full_status, print_cluster_status
 
 
 def print_detail(args, settings):
-    j = Job("12345", "0.0", "job12345", settings["username"], 'r', '',
+    j = Job("12345", "0.0", "job12345", settings["username"], 'r', None,
             0., 0., 0., 0, 0, 0, 0, 0,
             100, "tgroup", 100, "tgroup",
             "test project", "test department",
@@ -14,8 +14,8 @@ def print_detail(args, settings):
             "95", "60", "12884901888", "10565619.54816",
             "0.489 s", "1563", "12.000G", "12.000G",
             0, 0, 0, 0, 0,
-            0., None, "6", "1")
-    jo = Job("12344", "0.0", "job12344", "user01", 'r', '',
+            0., None, "cluster01.q@host001", "6", "1")
+    jo = Job("12344", "0.0", "job12344", "user01", 'r', None,
              0., 0., 0., 0, 0, 0, 0, 0,
              101, "tgroup", 100, "tgroup",
              "test project", "test department",
@@ -23,8 +23,8 @@ def print_detail(args, settings):
              "60", "35", "8589934592", "8589934592",
              "0.135 s", "8275", "8.000G", "8.000G",
              0, 0, 0, 0, 0,
-             0., None, "4", "1")
-    jp = Job("12346", "0.0", "job12346", "user02", 'qw', '',
+             0., None, "cluster01.q@host001", "4", "1")
+    jp = Job("12346", "0.0", "job12346", "user02", 'qw', None,
              0., 0., 0., 0, 0, 0, 0, 0,
              102, "tgroup", 100, "tgroup",
              "test project", "test department",
@@ -32,8 +32,8 @@ def print_detail(args, settings):
              None, None, None, None,
              None, None, None, None,
              0, 0, 0, 0, 0,
-             0., None, "10", "1")
-    ja = Job("12340", "0.0", "job12340", "user03", 'r', '',
+             0., None, None, "10", "1")
+    ja = Job("12340", "0.0", "job12340", "user03", 'r', None,
              0., 0., 0., 0, 0, 0, 0, 0,
              101, "tgroup", 100, "tgroup",
              "test project", "test department",
@@ -41,7 +41,7 @@ def print_detail(args, settings):
              "11", "10", "143881404416", "34853659.60704",
              "0.354 s", "2345", "57.400G", "57.400G",
              0, 0, 0, 0, 0,
-             0., None, "20", "1")
+             0., None, "cluster02.q@host003", "20", "1")
 
     q = Queue("cluster01.q@host001", "BIP", "0", "10", "20", "4.71", "lx-amd64", '')
     qo = Queue("cluster01.q@host002", "BIP", "0", "0", "20", "0.03", "lx-amd64", '')
