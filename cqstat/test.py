@@ -86,6 +86,9 @@ def print_detail(args, settings):
     print_job_status([ja, jo, j, jp])
     print()
     print()
+
+    Job.attributes.remove("queue")
+
     print("full format preview (-e/-f):")
     print()
     print(
