@@ -99,6 +99,14 @@ class StatAttribute(Coloring):
     def bytesec(self, l):
         return self.bytes(l, suffix=('Bs ', "KBs", "MBs", "GBs"))
 
+    def make_colored_strfunc(self, col):
+        colfunc = self._color(col)
+
+        def _f(l):
+            return self.value if l < 1 else colfunc(self.value.center(l))
+
+        return _f
+
     def __init__(self, name, value, strfunc='l'):
         # shortcut: (stringify function, store func)
         STRFUNC_PRESETS = {
@@ -120,8 +128,8 @@ class StatAttribute(Coloring):
         self.name = name
 
         if value is None:
-            self.strfunc = lambda l: ' '*l
-            self.value = "NA"
+            self.strfunc = self.make_colored_strfunc("red")
+            self.value = "-"
         elif strfunc in STRFUNC_PRESETS:
             strfunc, valfunc = STRFUNC_PRESETS[strfunc]
             if valfunc is None:
