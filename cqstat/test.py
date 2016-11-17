@@ -83,7 +83,7 @@ def print_detail(args, settings):
 
     print("preview:")
     print()
-    print_job_status([c, c2, pj])
+    print_job_status([ja, jo, j, jp])
     print()
     print()
     print("full format preview (-e/-f):")
