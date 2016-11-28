@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 SEPARATOR = "  "
+INDENT_LENGTH = 8
 
 
 def _get_row_length(attr_lens):
@@ -108,14 +109,14 @@ def print_full_status(clusters, pending_jobs, sort, full):
         queue_status, q_attr_lens = _justify_string(status)
 
         for q_status, jobs in zip(queue_status, jobs):
-            print((' ' * 8) + SEPARATOR.join(q_status))
+            print((' ' * INDENT_LENGTH) + SEPARATOR.join(q_status))
 
             job_status, attr_lens = _justify_string(_get_job_status(jobs))
 
             if job_status:
-                print((' ' * 8) + ('-' * (_get_row_length(attr_lens) + 8)))
+                print((' ' * INDENT_LENGTH) + ('-' * (_get_row_length(attr_lens) + INDENT_LENGTH)))
             for j in job_status:
-                print((' ' * 16) + SEPARATOR.join(j))
+                print((' ' * INDENT_LENGTH * 2) + SEPARATOR.join(j))
 
     visible_job_num = sum(j.is_visible for j in pending_jobs) if pending_jobs else 0
     if visible_job_num:
