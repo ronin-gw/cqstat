@@ -96,8 +96,8 @@ class StatAttribute(Coloring):
                 break
         return "{:7.5f} {}".format(v, s).rjust(l)
 
-    def bytesec(self, l):
-        return self.bytes(l, suffix=('Bs ', "KBs", "MBs", "GBs"))
+    def gbsec(self, l):
+        return self.bytes(l, suffix=("GBs", "TBs"))
 
     def make_colored_strfunc(self, col):
         colfunc = self._color(col)
@@ -122,7 +122,7 @@ class StatAttribute(Coloring):
             "sec": (self.second, float),
             "fsec": (self.fsecond, float),
             'b': (self.bytes, float),
-            "bs": (self.bytes, float)
+            "gbs": (self.gbsec, float)
         }
 
         self.name = name

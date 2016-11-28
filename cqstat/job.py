@@ -40,7 +40,7 @@ class Job(object):
         slots=("slots", 'r'),
         wallclock=("wallclock", "sec"),
         cpu=("cpu", "sec"),
-        mem=("mem", "bs"),
+        mem=("mem", "gbs"),
         io=("io", "b"),
         iow=("iow", "fsec"),
         ioops=("ioos", 'i'),
