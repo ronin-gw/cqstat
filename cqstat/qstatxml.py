@@ -72,24 +72,27 @@ def _elems2dict(tree, key, val, ename="element"):
 
 
 def parse_djob_info(string):
-    root = ElementTree.fromstring(string)
+    detailed_job_info = map(lambda s: "<?xml" + s, string.split("<?xml")[1:])
+
     jobs = {}
+    for info in detailed_job_info:
+        root = ElementTree.fromstring(info)
 
-    for job in root.findall("djob_info/element"):
-        attrs = {VJI2KWARG[e.tag]: e.text for e in job if e.tag in VJI2KWARG}
-        attrs["sup_group"] = ','.join(_elems2list(job.find("JB_supplementary_group_list"), "ST_name"))
-        attrs["jh_resources"] = _elems2dict(job.find("JB_hard_resource_list"), "CE_name", "CE_doubleval")
-        if not attrs["jh_resources"]:
-            attrs["jh_resources"] = _elems2dict(job.find("JB_hard_resource_list"), "CE_name", "CE_doubleval", "qstat_l_requests")
+        for job in root.findall("djob_info/element"):
+            attrs = {VJI2KWARG[e.tag]: e.text for e in job if e.tag in VJI2KWARG}
+            attrs["sup_group"] = ','.join(_elems2list(job.find("JB_supplementary_group_list"), "ST_name"))
+            attrs["jh_resources"] = _elems2dict(job.find("JB_hard_resource_list"), "CE_name", "CE_doubleval")
+            if not attrs["jh_resources"]:
+                attrs["jh_resources"] = _elems2dict(job.find("JB_hard_resource_list"), "CE_name", "CE_doubleval", "qstat_l_requests")
 
-        ja_tasks = {}
-        for task in job.findall("JB_ja_tasks/element"):
-            task_id = task.find("JAT_task_number").text
-            scaled_usage = _elems2dict(task.find("JAT_scaled_usage_list"), "UA_name", "UA_value", "Events")
-            ja_tasks[task_id] = scaled_usage
-        attrs["tasks"] = ja_tasks
+            ja_tasks = {}
+            for task in job.findall("JB_ja_tasks/element"):
+                task_id = task.find("JAT_task_number").text
+                scaled_usage = _elems2dict(task.find("JAT_scaled_usage_list"), "UA_name", "UA_value", "Events")
+                ja_tasks[task_id] = scaled_usage
+            attrs["tasks"] = ja_tasks
 
-        jobs[attrs["job_ID"]] = attrs
+            jobs[attrs["job_ID"]] = attrs
 
     return jobs
 
