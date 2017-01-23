@@ -86,6 +86,16 @@ def parse_djob_info(string):
                 attrs["jh_resources"] = _elems2dict(job.find("JB_hard_resource_list"), "CE_name", "CE_doubleval", "qstat_l_requests")
 
             ja_tasks = {}
+            # TODO: add parser for UGE
+            # <JB_ja_tasks>
+            #   <ulong_sublist>
+            #     <JAT_status>128</JAT_status>
+            #     <JAT_task_number>1</JAT_task_number>
+            #     <JAT_scaled_usage_list>
+            #       <scaled>
+            #         <UA_name>cpu</UA_name>
+            #         <UA_value>2776.450000</UA_value>
+            #       </scaled>
             for task in job.findall("JB_ja_tasks/element"):
                 task_id = task.find("JAT_task_number").text
                 scaled_usage = _elems2dict(task.find("JAT_scaled_usage_list"), "UA_name", "UA_value", "Events")
